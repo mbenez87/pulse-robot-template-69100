@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import LottieAnimation from "./LottieAnimation";
+import ariaPlatformVector from "@/assets/aria-platform-vector.png";
 
 const Hero = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -164,7 +165,7 @@ const Hero = () => {
               <div className="relative transition-all duration-500 ease-out overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl">
                 <img 
                   ref={imageRef} 
-                  src="/lovable-uploads/7a406227-95fb-4c57-9bb3-1c0d71f7b365.png" 
+                  src={ariaPlatformVector} 
                   alt="ARIA Document Management Platform Interface" 
                   className="w-full h-auto object-cover transition-transform duration-500 ease-out" 
                   style={{ transformStyle: 'preserve-3d' }} 
