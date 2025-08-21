@@ -50,11 +50,11 @@ const Navbar = () => {
         <Link 
           to="/" 
           className="flex items-center space-x-2"
-          aria-label="Pulse Robot"
+          aria-label="ARIA"
         >
           <img 
             src="/logo.svg" 
-            alt="Pulse Robot Logo" 
+            alt="ARIA Logo" 
             className="h-7 sm:h-8" 
           />
         </Link>

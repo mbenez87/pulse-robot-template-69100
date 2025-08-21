@@ -10,27 +10,27 @@ interface TestimonialProps {
 }
 
 const testimonials: TestimonialProps[] = [{
-  content: "Atlas transformed our production line, handling repetitive tasks while our team focuses on innovation. 30% increase in output within three months.",
+  content: "ARIA revolutionized our document workflow. Finding contracts and reports that used to take hours now takes seconds. Our productivity increased by 40%.",
   author: "Sarah Chen",
-  role: "VP of Operations, Axion Manufacturing",
+  role: "VP of Operations, TechFlow Inc.",
   gradient: "from-blue-700 via-indigo-800 to-purple-900",
   backgroundImage: "/background-section1.png"
 }, {
-  content: "Implementing Atlas in our fulfillment centers reduced workplace injuries by 40% while improving order accuracy. The learning capabilities are remarkable.",
+  content: "The AI-powered categorization in ARIA saved us countless hours of manual organization. Our compliance team can now access any document instantly.",
   author: "Michael Rodriguez",
-  role: "Director of Logistics, GlobalShip",
+  role: "Director of Compliance, LegalTech",
   gradient: "from-indigo-900 via-purple-800 to-orange-500",
   backgroundImage: "/background-section2.png"
 }, {
-  content: "Atlas adapted to our lab protocols faster than any system we've used. It's like having another researcher who never gets tired and maintains perfect precision.",
+  content: "ARIA's natural language search is phenomenal. I can ask for 'quarterly reports with declining revenue' and it finds exactly what I need. Game changer.",
   author: "Dr. Amara Patel",
-  role: "Lead Scientist, BioAdvance Research",
+  role: "Research Director, DataSolutions",
   gradient: "from-purple-800 via-pink-700 to-red-500",
   backgroundImage: "/background-section3.png"
 }, {
-  content: "As a mid-size business, we never thought advanced robotics would be accessible to us. Atlas changed that equation entirely with its versatility and ease of deployment.",
+  content: "As a small business, we never thought enterprise-level document management would be accessible. ARIA changed everything with its intuitive design and pricing.",
   author: "Jason Lee",
-  role: "CEO, Innovative Solutions Inc.",
+  role: "CEO, Creative Studios",
   gradient: "from-orange-600 via-red-500 to-purple-600",
   backgroundImage: "/background-section1.png"
 }];

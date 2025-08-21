@@ -18,7 +18,7 @@ const Newsletter = () => {
     setTimeout(() => {
       toast({
         title: "Thank you for subscribing!",
-        description: "You'll receive updates about Atlas soon."
+        description: "You'll receive updates about ARIA soon."
       });
       setEmail("");
       setIsSubmitting(false);
@@ -36,7 +36,7 @@ const Newsletter = () => {
           
           <h2 className="text-5xl font-display font-bold mb-4 text-left">Subscribe to the newsletter</h2>
           <p className="text-xl text-gray-700 mb-10 text-left">
-            Be first to hear about breakthroughs, partnerships, and deployment opportunities
+            Be first to hear about new features, integrations, and productivity insights
           </p>
           
           <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 items-start md:items-center">
