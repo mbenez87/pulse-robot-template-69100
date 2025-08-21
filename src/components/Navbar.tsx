@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Menu, X, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -46,13 +47,9 @@ const Navbar = () => {
       )}
     >
       <div className="container flex items-center justify-between px-4 sm:px-6 lg:px-8">
-        <a 
-          href="#" 
+        <Link 
+          to="/" 
           className="flex items-center space-x-2"
-          onClick={(e) => {
-            e.preventDefault();
-            scrollToTop();
-          }}
           aria-label="Pulse Robot"
         >
           <img 
@@ -60,27 +57,27 @@ const Navbar = () => {
             alt="Pulse Robot Logo" 
             className="h-7 sm:h-8" 
           />
-        </a>
+        </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <a 
-            href="/" 
+          <Link 
+            to="/" 
             className="nav-link flex items-center gap-2"
           >
             <Home className="h-4 w-4" />
             Home
-          </a>
-          <a href="/documents" className="nav-link">Documents</a>
+          </Link>
+          <Link to="/documents" className="nav-link">Documents</Link>
           <a href="#features" className="nav-link">About</a>
           <a href="#details" className="nav-link">Contact</a>
           
           <div className="flex items-center gap-3 ml-6">
             <Button variant="outline" asChild>
-              <a href="/register">Sign In</a>
+              <Link to="/register">Sign In</Link>
             </Button>
             <Button asChild className="button-primary">
-              <a href="/register">Get Started</a>
+              <Link to="/register">Get Started</Link>
             </Button>
           </div>
         </nav>
@@ -101,8 +98,8 @@ const Navbar = () => {
         isMenuOpen ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full pointer-events-none"
       )}>
         <nav className="flex flex-col space-y-6 items-center mt-8">
-          <a 
-            href="/" 
+          <Link 
+            to="/" 
             className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center gap-2" 
             onClick={() => {
               setIsMenuOpen(false);
@@ -111,9 +108,9 @@ const Navbar = () => {
           >
             <Home className="h-5 w-5" />
             Home
-          </a>
-          <a 
-            href="/documents" 
+          </Link>
+          <Link 
+            to="/documents" 
             className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
             onClick={() => {
               setIsMenuOpen(false);
@@ -121,7 +118,7 @@ const Navbar = () => {
             }}
           >
             Documents
-          </a>
+          </Link>
           <a 
             href="#features" 
             className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
@@ -145,20 +142,20 @@ const Navbar = () => {
           
           <div className="flex flex-col gap-3 w-full mt-8">
             <Button variant="outline" asChild className="w-full">
-              <a href="/register" onClick={() => {
+              <Link to="/register" onClick={() => {
                 setIsMenuOpen(false);
                 document.body.style.overflow = '';
               }}>
                 Sign In
-              </a>
+              </Link>
             </Button>
             <Button asChild className="button-primary w-full">
-              <a href="/register" onClick={() => {
+              <Link to="/register" onClick={() => {
                 setIsMenuOpen(false);
                 document.body.style.overflow = '';
               }}>
                 Get Started
-              </a>
+              </Link>
             </Button>
           </div>
         </nav>
