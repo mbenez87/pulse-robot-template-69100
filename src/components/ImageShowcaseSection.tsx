@@ -18,7 +18,7 @@ const ImageShowcaseSection = () => {
         <div className="rounded-2xl sm:rounded-3xl overflow-hidden shadow-elegant mx-auto max-w-4xl animate-on-scroll">
           <div className="w-full">
             <img 
-              src="/lovable-uploads/7a406227-95fb-4c57-9bb3-1c0d71f7b365.png" 
+              src="/lovable-uploads/0daffa38-676d-4f68-b417-3955c191c242.png" 
               alt="ARIA document management platform interface showing organized documents and AI-powered search" 
               className="w-full h-auto object-cover"
             />
