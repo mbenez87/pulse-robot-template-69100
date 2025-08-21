@@ -7,14 +7,19 @@ import DocumentSidebar from "@/components/documents/DocumentSidebar";
 import UploadModal from "@/components/documents/UploadModal";
 
 const Documents = () => {
+  console.log("Documents component is rendering");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+  console.log("Documents state:", { isUploadModalOpen, searchQuery, selectedCategory, viewMode });
+
+  try {
+    console.log("About to render Documents JSX");
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       <main className="pt-20">
         <div className="section-container">
@@ -51,6 +56,10 @@ const Documents = () => {
       <Footer />
     </div>
   );
+  } catch (error) {
+    console.error("Error in Documents component:", error);
+    return <div>Error loading Documents page</div>;
+  }
 };
 
 export default Documents;

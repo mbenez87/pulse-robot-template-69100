@@ -19,6 +19,7 @@ const DocumentHeader = ({
   viewMode,
   onViewModeChange,
 }: DocumentHeaderProps) => {
+  console.log("DocumentHeader rendering with:", { searchQuery, viewMode });
   return (
     <div className="space-y-6">
       {/* Title Section */}
