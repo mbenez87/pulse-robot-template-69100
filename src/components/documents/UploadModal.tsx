@@ -137,7 +137,7 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white z-50 border border-gray-200 shadow-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5 text-pulse-600" />
@@ -186,13 +186,13 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
           {uploadFiles.length > 0 && (
             <div className="space-y-4">
               <h4 className="font-medium text-gray-900">Uploading Files</h4>
-              <div className="space-y-3 max-h-60 overflow-y-auto">
+              <div className="space-y-3 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
                 {uploadFiles.map((uploadFile) => {
                   const Icon = getFileIcon(uploadFile.file.type);
                   return (
                     <div
                       key={uploadFile.id}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                      className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-lg shadow-sm"
                     >
                       <div className={cn("p-2 rounded-lg", getFileTypeColor(uploadFile.file.type))}>
                         <Icon className="h-4 w-4" />
@@ -238,7 +238,7 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex justify-end gap-3 pt-4 border-t bg-white sticky bottom-0">
             <Button variant="outline" onClick={handleClose}>
               Cancel
             </Button>
@@ -247,7 +247,7 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
               disabled={uploadFiles.some(f => f.status === "uploading")}
               className="button-primary"
             >
-              Done
+              {uploadFiles.some(f => f.status === "uploading") ? "Uploading..." : "Done"}
             </Button>
           </div>
         </div>
