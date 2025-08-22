@@ -297,6 +297,41 @@ export type Database = {
           },
         ]
       }
+      document_shares: {
+        Row: {
+          created_at: string
+          document_id: string
+          id: string
+          permission: string
+          shared_by: string
+          shared_with: string
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          id?: string
+          permission?: string
+          shared_by: string
+          shared_with: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          id?: string
+          permission?: string
+          shared_by?: string
+          shared_with?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_shares_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           ai_summary: string | null
@@ -305,7 +340,12 @@ export type Database = {
           file_size: number
           file_type: string
           id: string
+          is_folder: boolean
+          parent_folder_id: string | null
           processing_status: string | null
+          share_expires_at: string | null
+          share_link: string | null
+          shared_with: string[] | null
           storage_path: string
           tags: string[] | null
           updated_at: string
@@ -319,7 +359,12 @@ export type Database = {
           file_size: number
           file_type: string
           id?: string
+          is_folder?: boolean
+          parent_folder_id?: string | null
           processing_status?: string | null
+          share_expires_at?: string | null
+          share_link?: string | null
+          shared_with?: string[] | null
           storage_path: string
           tags?: string[] | null
           updated_at?: string
@@ -333,7 +378,12 @@ export type Database = {
           file_size?: number
           file_type?: string
           id?: string
+          is_folder?: boolean
+          parent_folder_id?: string | null
           processing_status?: string | null
+          share_expires_at?: string | null
+          share_link?: string | null
+          shared_with?: string[] | null
           storage_path?: string
           tags?: string[] | null
           updated_at?: string
@@ -341,6 +391,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "documents_parent_folder_id_fkey"
+            columns: ["parent_folder_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documents_user_id_fkey"
             columns: ["user_id"]
@@ -995,6 +1052,19 @@ export type Database = {
       delete_folder_and_contents: {
         Args: { folder_id_to_delete: string }
         Returns: undefined
+      }
+      get_folder_contents: {
+        Args: { folder_id?: string }
+        Returns: {
+          created_at: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          is_folder: boolean
+          storage_path: string
+          updated_at: string
+        }[]
       }
       get_industry_breakdown: {
         Args: Record<PropertyKey, never>
