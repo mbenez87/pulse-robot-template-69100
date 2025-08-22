@@ -246,11 +246,17 @@ const DocumentGrid = ({
                           <div className={cn("p-2 rounded-lg", getFileTypeColor(doc.file_type, doc.is_folder))}>
                             <Icon className="h-4 w-4" />
                           </div>
-                          <div className="flex-1">
+                        <div className="flex-1">
                             <p className="font-medium text-foreground truncate">{doc.file_name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {doc.is_folder ? 'Folder' : doc.file_type}
-                            </p>
+                            {doc.ai_summary && !doc.is_folder ? (
+                              <p className="text-sm text-muted-foreground truncate mb-1">
+                                {doc.ai_summary}
+                              </p>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                {doc.is_folder ? 'Folder' : doc.file_type}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -310,6 +316,12 @@ const DocumentGrid = ({
                   <h3 className="font-medium text-foreground truncate mb-1">
                     {doc.file_name}
                   </h3>
+                  
+                  {doc.ai_summary && !doc.is_folder && (
+                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                      {doc.ai_summary}
+                    </p>
+                  )}
                   
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
                     <span>

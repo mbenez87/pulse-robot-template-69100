@@ -16,6 +16,7 @@ export interface Document {
   user_id: string;
   shared_with?: string[];
   share_link?: string;
+  ai_summary?: string;
 }
 
 export const useDocuments = (folderId?: string) => {
@@ -147,6 +148,16 @@ export const useDocuments = (folderId?: string) => {
         .single();
 
       if (error) throw error;
+
+      // Generate AI summary for the uploaded document
+      try {
+        await supabase.functions.invoke('generate-document-summary', {
+          body: { documentId: data.id }
+        });
+      } catch (summaryError) {
+        console.error('Error generating summary:', summaryError);
+        // Don't fail the upload if summary generation fails
+      }
 
       await fetchDocuments();
       toast({
