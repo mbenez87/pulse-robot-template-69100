@@ -14,6 +14,7 @@ import RegisterBilling from "./pages/RegisterBilling";
 import Team from "./pages/Team";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import ARIA from "./pages/ARIA";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AppLayout } from "./components/AppLayout";
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/documents/:id" element={<ProtectedRoute><DocumentDetail /></ProtectedRoute>} />
             <Route path="/register" element={<ProtectedRoute><RegisterBilling /></ProtectedRoute>} />
             <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
+            <Route path="/aria" element={<ProtectedRoute><ARIA /></ProtectedRoute>} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

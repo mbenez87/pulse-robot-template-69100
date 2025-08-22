@@ -71,6 +71,7 @@ const Navbar = () => {
             Home
           </Link>
           <Link to="/documents" className="nav-link">Documents</Link>
+          <Link to="/aria" className="nav-link">ARIA</Link>
           <a href="#features" className="nav-link">About</a>
           <a href="#details" className="nav-link">Contact</a>
           
@@ -129,6 +130,16 @@ const Navbar = () => {
             }}
           >
             Documents
+          </Link>
+          <Link 
+            to="/aria" 
+            className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
+            onClick={() => {
+              setIsMenuOpen(false);
+              document.body.style.overflow = '';
+            }}
+          >
+            ARIA
           </Link>
           <a 
             href="#features" 
