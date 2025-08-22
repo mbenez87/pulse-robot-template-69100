@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bot, Send, User, FileText, Globe, Loader2 } from "lucide-react";
+import React from "react";
+import { Bot, Send, User, FileText, Globe, Loader2, ChevronDown, Search, Sparkles, Zap, Brain } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
@@ -24,16 +24,18 @@ interface Document {
 }
 
 const ARIA_MODELS = {
-  perplexity: { name: "Sonar (Perplexity)", icon: Globe, description: "Real-time web search" },
-  claude: { name: "Claude Sonnet", icon: Bot, description: "Advanced reasoning" },
-  gpt5: { name: "GPT-5", icon: Bot, description: "Latest OpenAI model" },
-  gemini: { name: "Google Gemini", icon: Bot, description: "Google's AI model" }
+  gpt5: { name: "GPT-5", icon: Zap, description: "Latest OpenAI flagship model" },
+  claude: { name: "Claude Sonnet 4", icon: Brain, description: "Advanced reasoning AI" },
+  gemini: { name: "Gemini 2.5 Pro", icon: Sparkles, description: "Google's latest AI model" },
+  perplexity: { name: "Perplexity Sonar", icon: Globe, description: "Real-time web search" }
 } as const;
 
 export default function ARIA() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [selectedModel, setSelectedModel] = useState<keyof typeof ARIA_MODELS>("perplexity");
+  const [selectedModel, setSelectedModel] = useState<keyof typeof ARIA_MODELS>("gpt5");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -187,26 +189,62 @@ export default function ARIA() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="relative">
                 <label className="text-sm font-medium mb-2 block">AI Model</label>
-                <Select value={selectedModel} onValueChange={setSelectedModel}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(ARIA_MODELS).map(([key, model]) => (
-                      <SelectItem key={key} value={key}>
-                        <div className="flex items-center gap-2">
-                          <model.icon className="h-4 w-4" />
-                          <div>
-                            <div className="font-medium">{model.name}</div>
-                            <div className="text-xs text-muted-foreground">{model.description}</div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="w-full flex items-center justify-between p-3 border rounded-lg bg-background hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    {React.createElement(ARIA_MODELS[selectedModel].icon, { className: "h-4 w-4" })}
+                    <span className="font-medium">{ARIA_MODELS[selectedModel].name}</span>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-50 p-2">
+                    <div className="relative mb-2">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="Search models..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 text-sm border rounded-md bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      {Object.entries(ARIA_MODELS)
+                        .filter(([_, model]) => 
+                          model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          model.description.toLowerCase().includes(searchQuery.toLowerCase())
+                        )
+                        .map(([key, model]) => (
+                          <button
+                            key={key}
+                            onClick={() => {
+                              setSelectedModel(key as keyof typeof ARIA_MODELS);
+                              setIsDropdownOpen(false);
+                              setSearchQuery("");
+                            }}
+                            className={`w-full flex items-center gap-3 p-3 rounded-md hover:bg-muted/50 transition-colors text-left ${
+                              selectedModel === key ? 'bg-primary/10 border border-primary/20' : ''
+                            }`}
+                          >
+                            {React.createElement(model.icon, { 
+                              className: `h-5 w-5 ${selectedModel === key ? 'text-primary' : 'text-muted-foreground'}` 
+                            })}
+                            <div>
+                              <div className="font-medium text-sm">{model.name}</div>
+                              <div className="text-xs text-muted-foreground">{model.description}</div>
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
