@@ -1,13 +1,15 @@
 
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Menu, X, Home } from "lucide-react";
+import { Menu, X, Home, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -73,12 +75,21 @@ const Navbar = () => {
           <a href="#details" className="nav-link">Contact</a>
           
           <div className="flex items-center gap-3 ml-6">
-            <Button variant="outline" asChild>
-              <Link to="/register">Sign In</Link>
-            </Button>
-            <Button asChild className="button-primary">
-              <Link to="/register">Get Started</Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button variant="outline" onClick={signOut} className="flex items-center gap-2">
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" asChild>
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+                <Button asChild className="button-primary">
+                  <Link to="/auth">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </nav>
 
@@ -141,22 +152,39 @@ const Navbar = () => {
           </a>
           
           <div className="flex flex-col gap-3 w-full mt-8">
-            <Button variant="outline" asChild className="w-full">
-              <Link to="/register" onClick={() => {
-                setIsMenuOpen(false);
-                document.body.style.overflow = '';
-              }}>
-                Sign In
-              </Link>
-            </Button>
-            <Button asChild className="button-primary w-full">
-              <Link to="/register" onClick={() => {
-                setIsMenuOpen(false);
-                document.body.style.overflow = '';
-              }}>
-                Get Started
-              </Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  signOut();
+                  setIsMenuOpen(false);
+                  document.body.style.overflow = '';
+                }}
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" asChild className="w-full">
+                  <Link to="/auth" onClick={() => {
+                    setIsMenuOpen(false);
+                    document.body.style.overflow = '';
+                  }}>
+                    Sign In
+                  </Link>
+                </Button>
+                <Button asChild className="button-primary w-full">
+                  <Link to="/auth" onClick={() => {
+                    setIsMenuOpen(false);
+                    document.body.style.overflow = '';
+                  }}>
+                    Get Started
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </nav>
       </div>
