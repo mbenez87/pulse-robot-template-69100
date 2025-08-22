@@ -1046,60 +1046,7 @@ export type Database = {
       }
     }
     Views: {
-      leadership_team_public: {
-        Row: {
-          accomplishments_and_awards: Json | null
-          created_at: string | null
-          display_order: number | null
-          education: Json | null
-          id: string | null
-          image_url: string | null
-          leadership_and_boards: Json | null
-          linkedin_url: string | null
-          media_and_news: Json | null
-          name: string | null
-          professional_background: Json | null
-          tagline: string | null
-          title: string | null
-          twitter_url: string | null
-          work_experience: Json | null
-        }
-        Insert: {
-          accomplishments_and_awards?: Json | null
-          created_at?: string | null
-          display_order?: number | null
-          education?: Json | null
-          id?: string | null
-          image_url?: string | null
-          leadership_and_boards?: Json | null
-          linkedin_url?: string | null
-          media_and_news?: Json | null
-          name?: string | null
-          professional_background?: Json | null
-          tagline?: string | null
-          title?: string | null
-          twitter_url?: string | null
-          work_experience?: Json | null
-        }
-        Update: {
-          accomplishments_and_awards?: Json | null
-          created_at?: string | null
-          display_order?: number | null
-          education?: Json | null
-          id?: string | null
-          image_url?: string | null
-          leadership_and_boards?: Json | null
-          linkedin_url?: string | null
-          media_and_news?: Json | null
-          name?: string | null
-          professional_background?: Json | null
-          tagline?: string | null
-          title?: string | null
-          twitter_url?: string | null
-          work_experience?: Json | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       delete_folder_and_contents: {
@@ -1134,6 +1081,26 @@ export type Database = {
           month: number
           total_amount: number
           year: number
+        }[]
+      }
+      get_leadership_team_public: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          accomplishments_and_awards: Json
+          created_at: string
+          display_order: number
+          education: Json
+          id: string
+          image_url: string
+          leadership_and_boards: Json
+          linkedin_url: string
+          media_and_news: Json
+          name: string
+          professional_background: Json
+          tagline: string
+          title: string
+          twitter_url: string
+          work_experience: Json
         }[]
       }
       get_portfolio_overview: {
