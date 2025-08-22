@@ -5,13 +5,15 @@ import DocumentHeader from "@/components/documents/DocumentHeader";
 import DocumentGrid from "@/components/documents/DocumentGrid";
 import DocumentSidebar from "@/components/documents/DocumentSidebar";
 import UploadModal from "@/components/documents/UploadModal";
+import AIDocumentSearch from "@/components/documents/AIDocumentSearch";
+import { PerplexitySearch } from "@/components/documents/PerplexitySearch";
 
 const Documents = () => {
   console.log("Documents component is rendering");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "ai-search">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "ai-search" | "web-search">("grid");
 
   console.log("Documents state:", { isUploadModalOpen, searchQuery, selectedCategory, viewMode });
 
@@ -38,11 +40,17 @@ const Documents = () => {
             />
             
             <div className="lg:col-span-3">
-              <DocumentGrid 
-                searchQuery={searchQuery}
-                selectedCategory={selectedCategory}
-                viewMode={viewMode}
-              />
+              {viewMode === 'ai-search' ? (
+                <AIDocumentSearch onDocumentSelect={(doc) => console.log('Selected document:', doc)} />
+              ) : viewMode === 'web-search' ? (
+                <PerplexitySearch />
+              ) : (
+                <DocumentGrid 
+                  searchQuery={searchQuery}
+                  selectedCategory={selectedCategory}
+                  viewMode={viewMode as 'grid' | 'list'}
+                />
+              )}
             </div>
           </div>
         </div>
