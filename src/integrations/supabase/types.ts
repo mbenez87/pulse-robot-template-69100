@@ -316,7 +316,15 @@ export type Database = {
           upload_status?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "documents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       events: {
         Row: {
@@ -595,40 +603,22 @@ export type Database = {
       }
       profiles: {
         Row: {
-          avatar_url: string | null
           created_at: string
-          email: string
-          full_name: string | null
           id: string
-          subscription_status: string | null
-          trial_end_date: string | null
-          trial_start_date: string | null
+          trial_expires_at: string
           updated_at: string
-          user_id: string
         }
         Insert: {
-          avatar_url?: string | null
           created_at?: string
-          email: string
-          full_name?: string | null
-          id?: string
-          subscription_status?: string | null
-          trial_end_date?: string | null
-          trial_start_date?: string | null
+          id: string
+          trial_expires_at?: string
           updated_at?: string
-          user_id: string
         }
         Update: {
-          avatar_url?: string | null
           created_at?: string
-          email?: string
-          full_name?: string | null
           id?: string
-          subscription_status?: string | null
-          trial_end_date?: string | null
-          trial_start_date?: string | null
+          trial_expires_at?: string
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
