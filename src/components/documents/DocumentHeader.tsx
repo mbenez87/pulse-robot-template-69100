@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Upload, Grid, List } from "lucide-react";
+import { Search, Upload, Grid, List, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -8,8 +8,8 @@ interface DocumentHeaderProps {
   onUpload: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  viewMode: "grid" | "list";
-  onViewModeChange: (mode: "grid" | "list") => void;
+  viewMode: "grid" | "list" | "ai-search";
+  onViewModeChange: (mode: "grid" | "list" | "ai-search") => void;
 }
 
 const DocumentHeader = ({
@@ -74,6 +74,17 @@ const DocumentHeader = ({
               )}
             >
               <List className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => onViewModeChange("ai-search")}
+              className={cn(
+                "p-2 rounded-md transition-colors",
+                viewMode === "ai-search" 
+                  ? "bg-white text-pulse-600 shadow-sm" 
+                  : "text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <Brain className="h-4 w-4" />
             </button>
           </div>
 

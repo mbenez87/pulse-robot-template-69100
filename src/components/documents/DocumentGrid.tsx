@@ -19,11 +19,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import AIDocumentSearch from "./AIDocumentSearch";
+import AIDocumentActions from "./AIDocumentActions";
 
 interface DocumentGridProps {
   searchQuery: string;
   selectedCategory: string;
-  viewMode: "grid" | "list";
+  viewMode: "grid" | "list" | "ai-search";
 }
 
 // Mock data for documents
@@ -117,6 +120,8 @@ const getFileTypeColor = (type: string) => {
 const DocumentGrid = ({ searchQuery, selectedCategory, viewMode }: DocumentGridProps) => {
   const navigate = useNavigate();
   const [documents, setDocuments] = useState(mockDocuments);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -137,6 +142,28 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode }: DocumentGridP
       )
     );
   };
+
+  // Handle AI Search mode
+  if (viewMode === "ai-search") {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <AIDocumentSearch onDocumentSelect={(id) => setSelectedDocumentId(id)} />
+        </div>
+        <div>
+          <AIDocumentActions 
+            documentId={selectedDocumentId || undefined}
+            onAnalysisComplete={(analysis) => {
+              toast({
+                title: "Analysis Complete",
+                description: "Document analysis has been completed successfully."
+              });
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (viewMode === "list") {
     return (

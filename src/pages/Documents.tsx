@@ -11,7 +11,7 @@ const Documents = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "ai-search">("grid");
 
   console.log("Documents state:", { isUploadModalOpen, searchQuery, selectedCategory, viewMode });
 
