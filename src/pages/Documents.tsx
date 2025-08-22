@@ -9,20 +9,27 @@ import AIDocumentSearch from "@/components/documents/AIDocumentSearch";
 import { PerplexitySearch } from "@/components/documents/PerplexitySearch";
 
 const Documents = () => {
-  console.log("Documents component is rendering");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list" | "ai-search" | "web-search">("grid");
+  const [currentFolderId, setCurrentFolderId] = useState<string | undefined>();
+  const [folderPath, setFolderPath] = useState<Array<{ id: string; name: string }>>([]);
 
-  console.log("Documents state:", { isUploadModalOpen, searchQuery, selectedCategory, viewMode });
+  const handleFolderChange = (folderId?: string) => {
+    setCurrentFolderId(folderId);
+    // Update folder path based on navigation
+    // This would ideally fetch the folder hierarchy from the database
+    if (!folderId) {
+      setFolderPath([]);
+    }
+    // For now, simple path management - would need proper implementation
+  };
 
-  try {
-    console.log("About to render Documents JSX");
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-      
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+    
       <main className="pt-20">
         <div className="section-container">
           <DocumentHeader 
@@ -49,6 +56,9 @@ const Documents = () => {
                   searchQuery={searchQuery}
                   selectedCategory={selectedCategory}
                   viewMode={viewMode as 'grid' | 'list'}
+                  currentFolderId={currentFolderId}
+                  onFolderChange={handleFolderChange}
+                  folderPath={folderPath}
                 />
               )}
             </div>
@@ -59,15 +69,12 @@ const Documents = () => {
       <UploadModal 
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
+        currentFolderId={currentFolderId}
       />
       
       <Footer />
     </div>
   );
-  } catch (error) {
-    console.error("Error in Documents component:", error);
-    return <div>Error loading Documents page</div>;
-  }
 };
 
 export default Documents;

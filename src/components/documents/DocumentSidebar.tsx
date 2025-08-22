@@ -7,7 +7,8 @@ import {
   Archive, 
   Star,
   Clock,
-  Trash2
+  Trash2,
+  Folder
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,25 +18,26 @@ interface DocumentSidebarProps {
 }
 
 const categories = [
-  { id: "all", label: "All Documents", icon: FolderOpen, count: 127 },
-  { id: "documents", label: "Documents", icon: FileText, count: 45 },
-  { id: "images", label: "Images", icon: Image, count: 32 },
-  { id: "videos", label: "Videos", icon: Video, count: 18 },
-  { id: "archives", label: "Archives", icon: Archive, count: 12 },
+  { id: "all", label: "All Files", icon: FolderOpen, count: 0 },
+  { id: "folders", label: "Folders", icon: Folder, count: 0 },
+  { id: "documents", label: "Documents", icon: FileText, count: 0 },
+  { id: "images", label: "Images", icon: Image, count: 0 },
+  { id: "videos", label: "Videos", icon: Video, count: 0 },
+  { id: "archives", label: "Archives", icon: Archive, count: 0 },
 ];
 
 const quickAccess = [
-  { id: "starred", label: "Starred", icon: Star, count: 8 },
-  { id: "recent", label: "Recent", icon: Clock, count: 15 },
-  { id: "trash", label: "Trash", icon: Trash2, count: 3 },
+  { id: "starred", label: "Starred", icon: Star, count: 0 },
+  { id: "recent", label: "Recent", icon: Clock, count: 0 },
+  { id: "trash", label: "Trash", icon: Trash2, count: 0 },
 ];
 
 const DocumentSidebar = ({ selectedCategory, onCategoryChange }: DocumentSidebarProps) => {
   return (
     <div className="space-y-6">
       {/* Categories */}
-      <div className="bg-white rounded-2xl p-6 shadow-elegant">
-        <h3 className="font-semibold text-gray-900 mb-4">Categories</h3>
+      <div className="bg-card rounded-lg border p-6">
+        <h3 className="font-semibold text-foreground mb-4">Categories</h3>
         <div className="space-y-2">
           {categories.map((category) => {
             const Icon = category.icon;
@@ -46,15 +48,15 @@ const DocumentSidebar = ({ selectedCategory, onCategoryChange }: DocumentSidebar
                 className={cn(
                   "w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors",
                   selectedCategory === category.id
-                    ? "bg-pulse-50 text-pulse-600 border border-pulse-200"
-                    : "hover:bg-gray-50 text-gray-700"
+                    ? "bg-primary/10 text-primary border border-primary/20"
+                    : "hover:bg-muted text-muted-foreground"
                 )}
               >
                 <div className="flex items-center gap-3">
                   <Icon className="h-4 w-4" />
                   <span className="font-medium">{category.label}</span>
                 </div>
-                <span className="text-sm text-gray-500">{category.count}</span>
+                <span className="text-sm text-muted-foreground">{category.count}</span>
               </button>
             );
           })}
@@ -62,8 +64,8 @@ const DocumentSidebar = ({ selectedCategory, onCategoryChange }: DocumentSidebar
       </div>
 
       {/* Quick Access */}
-      <div className="bg-white rounded-2xl p-6 shadow-elegant">
-        <h3 className="font-semibold text-gray-900 mb-4">Quick Access</h3>
+      <div className="bg-card rounded-lg border p-6">
+        <h3 className="font-semibold text-foreground mb-4">Quick Access</h3>
         <div className="space-y-2">
           {quickAccess.map((item) => {
             const Icon = item.icon;
@@ -74,15 +76,15 @@ const DocumentSidebar = ({ selectedCategory, onCategoryChange }: DocumentSidebar
                 className={cn(
                   "w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors",
                   selectedCategory === item.id
-                    ? "bg-pulse-50 text-pulse-600 border border-pulse-200"
-                    : "hover:bg-gray-50 text-gray-700"
+                    ? "bg-primary/10 text-primary border border-primary/20"
+                    : "hover:bg-muted text-muted-foreground"
                 )}
               >
                 <div className="flex items-center gap-3">
                   <Icon className="h-4 w-4" />
                   <span className="font-medium">{item.label}</span>
                 </div>
-                <span className="text-sm text-gray-500">{item.count}</span>
+                <span className="text-sm text-muted-foreground">{item.count}</span>
               </button>
             );
           })}
@@ -90,21 +92,21 @@ const DocumentSidebar = ({ selectedCategory, onCategoryChange }: DocumentSidebar
       </div>
 
       {/* Storage Usage */}
-      <div className="bg-white rounded-2xl p-6 shadow-elegant">
-        <h3 className="font-semibold text-gray-900 mb-4">Storage Usage</h3>
+      <div className="bg-card rounded-lg border p-6">
+        <h3 className="font-semibold text-foreground mb-4">Storage Usage</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Used</span>
-            <span className="font-medium">2.4 GB / 5 GB</span>
+            <span className="text-muted-foreground">Used</span>
+            <span className="font-medium text-foreground">0 B / 5 GB</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-muted rounded-full h-2">
             <div 
-              className="bg-pulse-500 h-2 rounded-full transition-all duration-300" 
-              style={{ width: "48%" }}
+              className="bg-primary h-2 rounded-full transition-all duration-300" 
+              style={{ width: "0%" }}
             />
           </div>
-          <p className="text-xs text-gray-500">
-            You have 2.6 GB of free space remaining
+          <p className="text-xs text-muted-foreground">
+            You have 5 GB of free space available
           </p>
         </div>
       </div>

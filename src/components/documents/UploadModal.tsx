@@ -9,6 +9,7 @@ import {
   CheckCircle,
   AlertCircle
 } from "lucide-react";
+import { useDocuments } from "@/hooks/useDocuments";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils";
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  currentFolderId?: string;
 }
 
 interface UploadFile {
@@ -53,9 +55,10 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
-const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
+const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => {
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const { uploadDocument } = useDocuments(currentFolderId);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -92,38 +95,56 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
 
     setUploadFiles(prev => [...prev, ...newUploadFiles]);
 
-    // Simulate upload progress
+    // Upload files
     newUploadFiles.forEach(uploadFile => {
-      simulateUpload(uploadFile.id);
+      realUpload(uploadFile.id, uploadFile.file);
     });
   };
 
-  const simulateUpload = (fileId: string) => {
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += Math.random() * 15;
-      
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
-        
+  const realUpload = async (fileId: string, file: File) => {
+    try {
+      // Simulate progress updates
+      const progressInterval = setInterval(() => {
         setUploadFiles(prev => 
-          prev.map(file => 
-            file.id === fileId 
-              ? { ...file, progress: 100, status: "complete" }
-              : file
+          prev.map(f => 
+            f.id === fileId 
+              ? { ...f, progress: Math.min(f.progress + Math.random() * 20, 90) }
+              : f
+          )
+        );
+      }, 200);
+
+      // Actual upload
+      const result = await uploadDocument(file);
+      
+      clearInterval(progressInterval);
+      
+      if (result) {
+        setUploadFiles(prev => 
+          prev.map(f => 
+            f.id === fileId 
+              ? { ...f, progress: 100, status: "complete" }
+              : f
           )
         );
       } else {
         setUploadFiles(prev => 
-          prev.map(file => 
-            file.id === fileId 
-              ? { ...file, progress }
-              : file
+          prev.map(f => 
+            f.id === fileId 
+              ? { ...f, status: "error" }
+              : f
           )
         );
       }
-    }, 200);
+    } catch (error) {
+      setUploadFiles(prev => 
+        prev.map(f => 
+          f.id === fileId 
+            ? { ...f, status: "error" }
+            : f
+        )
+      );
+    }
   };
 
   const removeFile = (fileId: string) => {
