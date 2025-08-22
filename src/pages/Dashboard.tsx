@@ -72,7 +72,7 @@ export default function Dashboard() {
               </Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/documents">
+              <Link to="/create">
                 <Plus className="h-4 w-4 mr-2" />
                 New Document
               </Link>
@@ -92,11 +92,17 @@ export default function Dashboard() {
         </p>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 flex gap-3">
         <Button asChild>
-          <Link to="/documents">
+          <Link to="/create">
             <Plus className="h-4 w-4 mr-2" />
-            Add New Document
+            Create Document
+          </Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/documents">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Document
           </Link>
         </Button>
       </div>
