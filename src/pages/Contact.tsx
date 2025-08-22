@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 export default function Contact() {
-  const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -16,11 +17,11 @@ export default function Contact() {
     setLoading(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
+      const form = new FormData(e.currentTarget);
       const payload = {
-        name: formData.get("name") as string,
-        email: formData.get("email") as string,
-        message: formData.get("message") as string,
+        name: form.get("name") as string,
+        email: form.get("email") as string,
+        message: form.get("message") as string,
       };
 
       const { error } = await supabase
@@ -32,7 +33,7 @@ export default function Contact() {
       setSent(true);
       toast({
         title: "Message sent!",
-        description: "Thank you for your message. We'll get back to you soon.",
+        description: "We'll get back to you as soon as possible.",
       });
     } catch (error) {
       console.error("Error sending message:", error);
@@ -48,57 +49,77 @@ export default function Contact() {
 
   if (sent) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2">Thank You!</h2>
-              <p className="text-muted-foreground">
-                We've received your message and will be in touch soon.
-              </p>
-            </div>
-          </CardContent>
+          <CardHeader className="text-center">
+            <CardTitle>Thank you!</CardTitle>
+            <CardDescription>
+              We've received your message and will be in touch soon.
+            </CardDescription>
+          </CardHeader>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="max-w-md w-full">
         <CardHeader>
-          <CardTitle className="text-2xl font-semibold">Contact Us</CardTitle>
+          <CardTitle>Contact Us</CardTitle>
+          <CardDescription>
+            Send us a message and we'll get back to you as soon as possible.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
-            <div>
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium">
+                Name
+              </label>
               <Input
+                id="name"
                 name="name"
-                placeholder="Your Name"
+                placeholder="Your name"
                 required
                 disabled={loading}
               />
             </div>
-            <div>
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium">
+                Email
+              </label>
               <Input
+                id="email"
                 name="email"
                 type="email"
-                placeholder="Your Email"
+                placeholder="your@email.com"
                 required
                 disabled={loading}
               />
             </div>
-            <div>
+            <div className="space-y-2">
+              <label htmlFor="message" className="text-sm font-medium">
+                Message
+              </label>
               <Textarea
+                id="message"
                 name="message"
-                placeholder="Your Message"
-                className="min-h-32"
+                placeholder="Your message..."
+                className="min-h-[120px]"
                 required
                 disabled={loading}
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Sending..." : "Send Message"}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send Message"
+              )}
             </Button>
           </form>
         </CardContent>
