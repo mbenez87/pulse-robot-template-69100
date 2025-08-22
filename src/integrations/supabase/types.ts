@@ -273,6 +273,51 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          ai_summary: string | null
+          created_at: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          processing_status: string | null
+          storage_path: string
+          tags: string[] | null
+          updated_at: string
+          upload_status: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          created_at?: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id?: string
+          processing_status?: string | null
+          storage_path: string
+          tags?: string[] | null
+          updated_at?: string
+          upload_status?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_summary?: string | null
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          processing_status?: string | null
+          storage_path?: string
+          tags?: string[] | null
+          updated_at?: string
+          upload_status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string | null
@@ -545,6 +590,45 @@ export type Database = {
           image_url?: string | null
           redemption_link?: string | null
           title?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          subscription_status: string | null
+          trial_end_date: string | null
+          trial_start_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          subscription_status?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          subscription_status?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
