@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   FileText, 
   Image, 
@@ -114,6 +115,7 @@ const getFileTypeColor = (type: string) => {
 };
 
 const DocumentGrid = ({ searchQuery, selectedCategory, viewMode }: DocumentGridProps) => {
+  const navigate = useNavigate();
   const [documents, setDocuments] = useState(mockDocuments);
 
   const filteredDocuments = documents.filter((doc) => {
@@ -154,7 +156,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode }: DocumentGridP
               {filteredDocuments.map((doc) => {
                 const Icon = getFileIcon(doc.type);
                 return (
-                  <tr key={doc.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={doc.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate(`/documents/${doc.id}`)}>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <div className={cn("p-2 rounded-lg", getFileTypeColor(doc.type))}>
@@ -216,6 +218,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode }: DocumentGridP
           <div
             key={doc.id}
             className="bg-white rounded-2xl shadow-elegant hover:shadow-elegant-hover transition-all duration-300 hover:-translate-y-1 cursor-pointer group"
+            onClick={() => navigate(`/documents/${doc.id}`)}
           >
             {/* Thumbnail or Icon */}
             <div className="relative h-48 bg-gray-50 rounded-t-2xl overflow-hidden">
