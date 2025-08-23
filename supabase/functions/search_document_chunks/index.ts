@@ -1,0 +1,2 @@
+-- This function will be created as a database function in the migration
+-- The file is here for reference only
