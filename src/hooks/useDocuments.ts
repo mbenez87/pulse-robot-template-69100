@@ -134,9 +134,14 @@ export const useDocuments = (folderId?: string) => {
     console.log(`Starting upload for: ${file.name}, size: ${file.size}, type: ${file.type}`);
 
     try {
-      // Upload file to storage
-      const fileName = `${crypto.randomUUID()}-${file.name}`;
+      // Generate a clean filename with timestamp and random string
+      const timestamp = Date.now();
+      const randomString = Math.random().toString(36).substring(2, 15);
+      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_'); // Replace special chars
+      const fileName = `${timestamp}_${randomString}_${cleanFileName}`;
       const filePath = `${user.id}/${fileName}`;
+      
+      console.log('Uploading file with path:', filePath);
       
       console.log(`Uploading to storage path: ${filePath}`);
       
