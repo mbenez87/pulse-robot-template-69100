@@ -452,8 +452,8 @@ export default function ARIA() {
           <div className="bg-card/80 backdrop-blur-sm border rounded-2xl shadow-lg p-6">
             <div className="flex flex-col gap-3 md:gap-4">
               
-              {/* Search Input (Top) */}
-              <div className="w-full rounded-2xl border bg-white/70 backdrop-blur px-4 py-3 md:py-4 shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
+              {/* Search Input with Embedded Send Button */}
+              <div className="relative w-full rounded-2xl border bg-white/70 backdrop-blur px-4 py-3 md:py-4 shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
                 <div className="flex items-start gap-3">
                   <Search className="h-5 w-5 text-muted-foreground mt-1" />
                   <textarea
@@ -469,15 +469,29 @@ export default function ARIA() {
                     }}
                     onKeyDown={handleKeyPress}
                     placeholder="Ask anything about your documents…"
-                    aria-label="Search documents"
-                    className="w-full resize-none overflow-hidden bg-transparent outline-none leading-relaxed text-base md:text-lg placeholder:text-muted-foreground/60"
+                    aria-label="Ask anything about your documents"
+                    className="w-full resize-none overflow-hidden bg-transparent outline-none leading-relaxed text-base md:text-lg placeholder:text-muted-foreground/60 pr-14 md:pr-16"
                     style={{ height: 'auto', minHeight: '28px' }}
                     disabled={isLoading}
                   />
+                  
+                  {/* Embedded Send Button */}
+                  <Button 
+                    onClick={handleSubmit} 
+                    disabled={!inputValue.trim() || isLoading}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 p-0 rounded-lg"
+                    aria-label="Submit search"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
                 </div>
               </div>
 
-              {/* Controls Row (Bottom) */}
+              {/* Controls - Row A: Primary Controls */}
               <div className="flex flex-wrap items-center justify-between gap-2 md:gap-3">
                 
                 {/* Left Group - Mode Chips */}
@@ -501,17 +515,15 @@ export default function ARIA() {
                   })}
                 </div>
 
-                {/* Right Group - Model, Verifier, Send */}
-                <div className="flex items-center gap-2">
-                  
-                  {/* Model Selector */}
+                {/* Center Group - Model Selector */}
+                <div className="flex-shrink-0">
                   <Select value={selectedModel} onValueChange={handleModelChange}>
-                    <SelectTrigger className="w-48">
-                      <div className="flex items-center gap-2">
-                        <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-4 w-4" />
-                        <div className="flex items-center gap-2">
+                    <SelectTrigger className="min-w-[176px] md:min-w-[200px]">
+                      <div className="flex items-center gap-2 w-full">
+                        <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-4 w-4 flex-shrink-0" />
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
                           <span className="truncate">{selectedModelOption?.label}</span>
-                          <span className={`px-2 py-0.5 text-xs rounded-full ${selectedModelOption?.badgeColor}`}>
+                          <span className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${selectedModelOption?.badgeColor}`}>
                             {selectedModelOption?.badge}
                           </span>
                         </div>
@@ -542,33 +554,31 @@ export default function ARIA() {
                       })}
                     </SelectContent>
                   </Select>
+                </div>
 
-                  {/* Verifier Toggle */}
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={verifierEnabled}
-                      onCheckedChange={handleVerifierToggle}
-                    />
-                    <span className="text-sm text-muted-foreground hidden sm:inline">Cross-check</span>
-                  </div>
+                {/* Right Group - Real-time badge (if needed) */}
+                <div className="flex items-center gap-2">
+                  {selectedModel === 'perplexity' && selectedMode === 'web' && (
+                    <Badge variant="secondary" className="text-xs">
+                      Real-time
+                    </Badge>
+                  )}
+                </div>
+              </div>
 
-                  {/* Send Button */}
-                  <Button 
-                    onClick={handleSubmit} 
-                    disabled={!inputValue.trim() || isLoading}
-                    className="px-4 md:px-6"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </Button>
+              {/* Controls - Row B: Utility (Cross-check toggle right-aligned) */}
+              <div className="flex justify-end mt-1">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={verifierEnabled}
+                    onCheckedChange={handleVerifierToggle}
+                  />
+                  <span className="text-sm text-muted-foreground">Cross-check answer</span>
                 </div>
               </div>
 
               {/* Helper Text */}
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/50">
                 <div className="flex items-center gap-2">
                   <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-3 w-3" />
                   <span>Using {selectedModelOption?.label}</span>
