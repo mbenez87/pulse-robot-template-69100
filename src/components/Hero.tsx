@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import LottieAnimation from "./LottieAnimation";
-import abstract3DVector from "@/assets/abstract-3d-vector.png";
+import ariaDocumentsInterface from "@/assets/aria-documents-interface.png";
+import crmDashboardVector from "@/assets/crm-dashboard-vector.png";
 
 const Hero = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -165,11 +166,12 @@ const Hero = () => {
               <div className="relative transition-all duration-500 ease-out overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl">
                 <img 
                   ref={imageRef} 
-                  src={abstract3DVector} 
-                  alt="Abstract 3D Vector Illustration" 
+                  src={ariaDocumentsInterface} 
+                  alt="ARIA Document Management Platform Interface" 
                   className="w-full h-auto object-cover transition-transform duration-500 ease-out" 
                   style={{ transformStyle: 'preserve-3d' }} 
                 />
+                <div className="absolute inset-0" style={{ backgroundImage: `url(${crmDashboardVector})`, backgroundSize: 'cover', backgroundPosition: 'center', mixBlendMode: 'overlay', opacity: 0.7 }}></div>
               </div>
               </>
             )}
