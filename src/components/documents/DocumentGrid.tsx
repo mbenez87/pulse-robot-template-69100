@@ -79,20 +79,25 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
           matchesCategory = !doc.is_folder && (
             doc.file_type.includes("pdf") || 
             doc.file_type.includes("doc") || 
-            doc.file_type.includes("text")
+            doc.file_type.includes("text") ||
+            doc.file_type.includes("sheet") || 
+            doc.file_type.includes("excel") ||
+            doc.file_type.includes("application/")
           );
           break;
         case "images":
           matchesCategory = !doc.is_folder && doc.file_type.startsWith("image/");
           break;
-        case "spreadsheets":
-          matchesCategory = !doc.is_folder && (
-            doc.file_type.includes("sheet") || 
-            doc.file_type.includes("excel")
-          );
+        case "videos":
+          matchesCategory = !doc.is_folder && doc.file_type.startsWith("video/");
           break;
-        case "pdfs":
-          matchesCategory = !doc.is_folder && doc.file_type.includes("pdf");
+        case "archives":
+          matchesCategory = !doc.is_folder && (
+            doc.file_type.includes("zip") || 
+            doc.file_type.includes("rar") || 
+            doc.file_type.includes("tar") ||
+            doc.file_type.includes("7z")
+          );
           break;
         case "folders":
           matchesCategory = doc.is_folder;
