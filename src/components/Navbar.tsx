@@ -72,8 +72,8 @@ const Navbar = () => {
           </Link>
           <Link to="/documents" className="nav-link">Documents</Link>
           <Link to="/aria" className="nav-link">ARIA</Link>
-          <a href="#features" className="nav-link">About</a>
-          <a href="#details" className="nav-link">Contact</a>
+          <Link to="/about" className="nav-link">About</Link>
+          <Link to="/contact" className="nav-link">Contact</Link>
           
           <div className="flex items-center gap-3 ml-6">
             {isAuthenticated ? (
@@ -141,8 +141,8 @@ const Navbar = () => {
           >
             ARIA
           </Link>
-          <a 
-            href="#features" 
+          <Link 
+            to="/about" 
             className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
             onClick={() => {
               setIsMenuOpen(false);
@@ -150,9 +150,9 @@ const Navbar = () => {
             }}
           >
             About
-          </a>
-          <a 
-            href="#details" 
+          </Link>
+          <Link 
+            to="/contact" 
             className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
             onClick={() => {
               setIsMenuOpen(false);
@@ -160,7 +160,7 @@ const Navbar = () => {
             }}
           >
             Contact
-          </a>
+          </Link>
           
           <div className="flex flex-col gap-3 w-full mt-8">
             {isAuthenticated ? (
