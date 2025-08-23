@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -89,50 +90,10 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    processFiles(files);
-  }, []);
-
-  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      processFiles(files);
-    }
-  }, []);
-
-  const processFiles = (files: File[]) => {
-    // Filter for allowed file types
-    const allowedFiles = files.filter(file => {
-      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-      return ACCEPTED_TYPES.includes(fileExtension) || ACCEPTED_MIME_TYPES.includes(file.type);
-    });
-
-    if (allowedFiles.length !== files.length) {
-      // Show error for rejected files
-      console.warn(`${files.length - allowedFiles.length} files were rejected. Only PDF, DOC/DOCX, XLS/XLSX, and JPEG/PNG files are allowed.`);
-    }
-
-    const newUploadFiles: UploadFile[] = allowedFiles.map(file => ({
-      id: Math.random().toString(36).substr(2, 9),
-      file,
-      progress: 0,
-      status: "uploading" as const,
-    }));
-
-    setUploadFiles(prev => [...prev, ...newUploadFiles]);
-
-    // Upload files with progress tracking
-    newUploadFiles.forEach(uploadFile => {
-      realUpload(uploadFile.id, uploadFile.file);
-    });
-  };
-
-  const realUpload = async (fileId: string, file: File) => {
+  const realUpload = useCallback(async (fileId: string, file: File) => {
     try {
+      console.log(`Starting upload for file: ${file.name}`);
+      
       // Simulate progress updates
       const progressInterval = setInterval(() => {
         setUploadFiles(prev => 
@@ -150,6 +111,7 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
       clearInterval(progressInterval);
       
       if (result) {
+        console.log(`Upload successful for file: ${file.name}`);
         setUploadFiles(prev => 
           prev.map(f => 
             f.id === fileId 
@@ -158,6 +120,7 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
           )
         );
       } else {
+        console.error(`Upload failed for file: ${file.name}`);
         setUploadFiles(prev => 
           prev.map(f => 
             f.id === fileId 
@@ -167,6 +130,7 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
         );
       }
     } catch (error) {
+      console.error(`Upload error for file: ${file.name}`, error);
       setUploadFiles(prev => 
         prev.map(f => 
           f.id === fileId 
@@ -175,7 +139,62 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
         )
       );
     }
-  };
+  }, [uploadDocument]);
+
+  const processFiles = useCallback((files: File[]) => {
+    console.log(`Processing ${files.length} files`);
+    
+    // Filter for allowed file types
+    const allowedFiles = files.filter(file => {
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      return ACCEPTED_TYPES.includes(fileExtension) || ACCEPTED_MIME_TYPES.includes(file.type);
+    });
+
+    if (allowedFiles.length !== files.length) {
+      // Show error for rejected files
+      console.warn(`${files.length - allowedFiles.length} files were rejected. Only PDF, DOC/DOCX, XLS/XLSX, and JPEG/PNG files are allowed.`);
+    }
+
+    if (allowedFiles.length === 0) {
+      console.warn('No valid files to upload');
+      return;
+    }
+
+    const newUploadFiles: UploadFile[] = allowedFiles.map(file => ({
+      id: Math.random().toString(36).substr(2, 9),
+      file,
+      progress: 0,
+      status: "uploading" as const,
+    }));
+
+    console.log(`Adding ${newUploadFiles.length} files to upload queue`);
+    setUploadFiles(prev => [...prev, ...newUploadFiles]);
+
+    // Upload files with progress tracking
+    newUploadFiles.forEach(uploadFile => {
+      console.log(`Starting upload for: ${uploadFile.file.name}`);
+      realUpload(uploadFile.id, uploadFile.file);
+    });
+  }, [realUpload]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    processFiles(files);
+  }, [processFiles]);
+
+  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('File input changed');
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      console.log(`Selected ${files.length} files:`, files.map(f => f.name));
+      processFiles(files);
+      // Reset the input value so the same file can be selected again
+      e.target.value = '';
+    }
+  }, [processFiles]);
 
   const removeFile = (fileId: string) => {
     setUploadFiles(prev => prev.filter(file => file.id !== fileId));
@@ -194,6 +213,9 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
             <Upload className="h-5 w-5 text-pulse-600" />
             Upload Documents
           </DialogTitle>
+          <DialogDescription>
+            Upload your documents to your secure workspace. Supported formats: PDF, DOC/DOCX, XLS/XLSX, JPEG/PNG.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
