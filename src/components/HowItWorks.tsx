@@ -48,26 +48,26 @@ const HowItWorks = () => {
   const stepsData = [
     {
       number: "01",
-      title: "Request Access",
-      description: "Fill out the application form to join our early access program and secure your spot in line.",
+      title: "Upload PDFs, docs, and images",
+      description: "Drag and drop your documents into Signal87's secure workspace.",
       image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80"
     },
     {
       number: "02",
-      title: "Personalization",
-      description: "We'll work with you to customize Atlas to your specific needs and preferences.",
+      title: "Understand via OCR + embeddings",
+      description: "Content is indexed securely per org/room with advanced AI processing.",
       image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80"
     },
     {
       number: "03",
-      title: "Integration",
-      description: "Atlas arrives at your location and is integrated into your living or working environment.",
+      title: "Ask in ARIA",
+      description: "The router selects the right model and retrieves grounded context.",
       image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80"
     },
     {
       number: "04",
-      title: "Adaptation",
-      description: "Through daily interaction, Atlas learns and adapts to your routines, preferences, and needs.",
+      title: "Act with confidence",
+      description: "Redaction, obligations, forecasts, exports, and share controls at your fingertips.",
       image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80"
     }
   ];
@@ -118,9 +118,9 @@ const HowItWorks = () => {
           <div className="pulse-chip mx-auto mb-4">
             <span>Process</span>
           </div>
-          <h2 className="section-title mb-4">How Atlas Integrates Into Your Life</h2>
+          <h2 className="section-title mb-4">How it works</h2>
           <p className="section-subtitle mx-auto">
-            A seamless four-step process from request to full integration.
+            Four simple steps to transform your document workflow.
           </p>
         </div>
         

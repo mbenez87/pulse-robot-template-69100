@@ -2,12 +2,12 @@
 import React, { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import HumanoidSection from "@/components/HumanoidSection";
-import SpecsSection from "@/components/SpecsSection";
-import DetailsSection from "@/components/DetailsSection";
-import ImageShowcaseSection from "@/components/ImageShowcaseSection";
 import Features from "@/components/Features";
-
+import WhatYouCanDo from "@/components/WhatYouCanDo";
+import HowItWorks from "@/components/HowItWorks";
+import ARIASection from "@/components/ARIASection";
+import SecurityTrust from "@/components/SecurityTrust";
+import WhatMakesItUnique from "@/components/WhatMakesItUnique";
 import Newsletter from "@/components/Newsletter";
 import MadeByHumans from "@/components/MadeByHumans";
 import Footer from "@/components/Footer";
@@ -61,14 +61,14 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <main className="space-y-4 sm:space-y-8"> {/* Reduced space on mobile */}
+      <main className="space-y-4 sm:space-y-8">
         <Hero />
-        <HumanoidSection />
-        <SpecsSection />
-        <DetailsSection />
-        <ImageShowcaseSection />
         <Features />
-        
+        <WhatYouCanDo />
+        <HowItWorks />
+        <ARIASection />
+        <SecurityTrust />
+        <WhatMakesItUnique />
         <Newsletter />
         <MadeByHumans />
       </main>

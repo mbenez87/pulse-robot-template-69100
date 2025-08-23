@@ -114,14 +114,14 @@ const Hero = () => {
               className="section-title text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight opacity-0 animate-fade-in" 
               style={{ animationDelay: "0.3s" }}
             >
-              ARIA: Where Intelligence<br className="hidden sm:inline" />Meets Organization
+              Bring your documents to life.
             </h1>
             
             <p 
               style={{ animationDelay: "0.5s" }} 
               className="section-subtitle mt-3 sm:mt-6 mb-4 sm:mb-8 leading-relaxed opacity-0 animate-fade-in text-gray-950 font-normal text-base sm:text-lg text-left"
             >
-              The AI document management platform that revolutionizes how you organize, search, and collaborate.
+              A clean, Perplexity-style interface powered by Claude, GPT-5, Gemini, and Sonar—built to search, answer, and act on your files with citations and control.
             </p>
             
             <div 
@@ -129,7 +129,7 @@ const Hero = () => {
               style={{ animationDelay: "0.7s" }}
             >
               <a 
-                href="#get-access" 
+                href="/aria" 
                 className="flex items-center justify-center group w-full sm:w-auto text-center" 
                 style={{
                   backgroundColor: '#FE5C02',
@@ -139,11 +139,24 @@ const Hero = () => {
                   cursor: 'pointer',
                   fontSize: '14px',
                   lineHeight: '20px',
-                  padding: '16px 24px', // Slightly reduced padding for mobile
+                  padding: '16px 24px',
                   border: '1px solid white',
                 }}
               >
-                Try ARIA Free
+                Open ARIA
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </a>
+              <a 
+                href="/documents" 
+                className="flex items-center justify-center group w-full sm:w-auto text-center border border-white/20 bg-white/10 backdrop-blur-sm text-gray-800 hover:bg-white/20 transition-all duration-200" 
+                style={{
+                  borderRadius: '1440px',
+                  padding: '16px 24px',
+                  fontSize: '14px',
+                  lineHeight: '20px',
+                }}
+              >
+                Upload documents
                 <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
               </a>
             </div>

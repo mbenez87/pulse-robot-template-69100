@@ -95,49 +95,37 @@ const Features = () => {
             <span>Features</span>
           </div>
           <h2 className="section-title mb-3 sm:mb-4 opacity-0 fade-in-element">
-            Smart Organization, <br className="hidden sm:block" />Intuitive Search
+            Why Signal87
           </h2>
           <p className="section-subtitle mx-auto opacity-0 fade-in-element">
-            Built with cutting-edge AI to understand, categorize, and retrieve your documents intelligently.
+            Four key reasons Signal87 transforms how you work with documents.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
           <FeatureCard
-            icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 1 1-4-4"></path><path d="M12 8a4 4 0 1 0 4 4"></path><circle cx="12" cy="12" r="1"></circle></svg>}
-            title="Smart Categorization"
-            description="ARIA automatically categorizes and tags your documents using advanced AI, making organization effortless."
+            icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>}
+            title="Simple by design"
+            description="A single, fast search bar. No clunky menus."
             index={0}
           />
           <FeatureCard
-            icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"></path></svg>}
-            title="Intelligent Search"
-            description="Find documents instantly with natural language queries. ARIA understands context and meaning, not just keywords."
+            icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>}
+            title="Answers, not files"
+            description="Get citations and snippets; share answer-only links without exposing documents."
             index={1}
           />
           <FeatureCard
-            icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>}
-            title="Content Analysis"
-            description="Extract key insights, summaries, and metadata from any document type automatically."
+            icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 1 1-4-4"></path><path d="M12 8a4 4 0 1 0 4 4"></path><circle cx="12" cy="12" r="1"></circle></svg>}
+            title="Model-smart"
+            description="Auto-routes to the best model per query (Claude / GPT-5 / Gemini / Sonar), with manual override."
             index={2}
           />
           <FeatureCard
-            icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="m22 21-3-3m1-4a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"></path></svg>}
-            title="Team Collaboration"
-            description="Share, comment, and collaborate on documents seamlessly with real-time sync and version control."
-            index={3}
-          />
-          <FeatureCard
             icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path d="m9 12 2 2 4-4"></path></svg>}
-            title="Enterprise Security"
-            description="Bank-grade encryption, compliance controls, and audit trails keep your sensitive documents secure."
-            index={4}
-          />
-          <FeatureCard
-            icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>}
-            title="Analytics & Insights"
-            description="Track document usage, identify trends, and optimize your workflow with comprehensive analytics."
-            index={5}
+            title="Secure by default"
+            description="Org/room scoping (RLS), redaction + watermarking, full AI audit trails."
+            index={3}
           />
         </div>
       </div>
