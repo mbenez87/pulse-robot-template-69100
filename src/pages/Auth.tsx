@@ -18,31 +18,11 @@ export default function Auth() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let isMounted = true;
-    
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!isMounted) return;
-        
-        console.log('Auth state change:', event);
-        if (event === 'SIGNED_IN' && session) {
-          console.log('User signed in, redirecting to dashboard');
-          // Small delay to prevent flickering
-          setTimeout(() => {
-            if (isMounted) {
-              navigate('/dashboard', { replace: true });
-            }
-          }, 100);
-        }
-      }
-    );
-    
-    // Check existing session only once
+    // Only check for existing session once on mount, don't set up listeners
     const checkExistingSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session && isMounted) {
+        if (session) {
           console.log('Existing session found, redirecting to dashboard');
           navigate('/dashboard', { replace: true });
         }
@@ -52,11 +32,6 @@ export default function Auth() {
     };
     
     checkExistingSession();
-    
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -109,12 +84,12 @@ export default function Auth() {
         } else {
           setError(error.message);
         }
-      } else if (data.user) {
-        console.log('Sign in successful, user:', data.user.id);
-        // Clear any previous errors and show success message briefly
+      } else if (data.user && data.session) {
+        console.log('Sign in successful, redirecting immediately');
+        // Clear form and navigate immediately on successful login
         setError('');
-        setMessage('Signing in...');
-        // Don't navigate here - let the auth state change handler do it
+        setMessage('');
+        navigate('/dashboard', { replace: true });
       }
     } catch (err) {
       console.error('Unexpected sign in error:', err);
