@@ -56,6 +56,24 @@ export default function DocumentModal({
     setSaving(false);
   }
 
+  async function refreshSummary() {
+    if (!doc) return;
+    setSaving(true);
+    try {
+      // Call the edge function to regenerate summary
+      const { data } = await supabase.functions.invoke('generate-document-summary', {
+        body: { documentId: doc.id }
+      });
+      if (data) {
+        setDoc(prev => prev ? { ...prev, ai_summary: data.summary } : prev);
+      }
+    } catch (error) {
+      console.error('Error refreshing summary:', error);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function prettySize(bytes?: number | null) {
     if (!bytes) return "—";
     const u = ["B","KB","MB","GB"]; let i = 0; let v = bytes;
@@ -96,7 +114,13 @@ export default function DocumentModal({
               )}
             </div>
 
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex gap-2 flex-wrap">
+              <button 
+                onClick={() => window.location.href = `/viewer/${doc?.id}`}
+                className="bg-primary text-primary-foreground px-3 py-2 rounded text-sm hover:bg-primary/90"
+              >
+                View Full Screen
+              </button>
               <a
                 href={thumbUrl ?? "#"}
                 target="_blank"
@@ -116,7 +140,13 @@ export default function DocumentModal({
                 {doc?.ai_summary || "No summary yet."}
               </div>
               <div className="mt-2">
-                <button className="border px-3 py-1 rounded text-sm hover:bg-muted">Refresh summary</button>
+                <button 
+                  onClick={refreshSummary}
+                  disabled={saving}
+                  className="border px-3 py-1 rounded text-sm hover:bg-muted disabled:opacity-50"
+                >
+                  {saving ? "Refreshing..." : "Refresh summary"}
+                </button>
               </div>
             </div>
 

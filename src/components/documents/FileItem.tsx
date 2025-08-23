@@ -92,8 +92,8 @@ export const FileItem = ({
     if (document.is_folder) {
       onOpen(document);
     } else {
-      setIsRenaming(true);
-      setTimeout(() => inputRef.current?.focus(), 0);
+      // For files, navigate to full-screen viewer
+      window.location.href = `/viewer/${document.id}`;
     }
   };
 
@@ -168,9 +168,14 @@ export const FileItem = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onOpen(document)}>
-                {document.is_folder ? 'Open' : 'Preview'}
-              </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onOpen(document)}>
+            {document.is_folder ? 'Open' : 'Details'}
+          </DropdownMenuItem>
+          {!document.is_folder && (
+            <DropdownMenuItem onClick={() => window.location.href = `/viewer/${document.id}`}>
+              Preview
+            </DropdownMenuItem>
+          )}
               {!document.is_folder && (
                 <DropdownMenuItem onClick={() => onDownload(document)}>
                   <Download className="mr-2 h-4 w-4" />
@@ -274,8 +279,13 @@ export const FileItem = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onOpen(document)}>
-            {document.is_folder ? 'Open' : 'Preview'}
+            {document.is_folder ? 'Open' : 'Details'}
           </DropdownMenuItem>
+          {!document.is_folder && (
+            <DropdownMenuItem onClick={() => window.location.href = `/viewer/${document.id}`}>
+              Preview
+            </DropdownMenuItem>
+          )}
           {!document.is_folder && (
             <DropdownMenuItem onClick={() => onDownload(document)}>
               <Download className="mr-2 h-4 w-4" />
