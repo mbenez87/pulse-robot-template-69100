@@ -19,7 +19,7 @@ serve(async (req) => {
         JSON.stringify({ error: 'Question is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-    
+    }
     // Only handle docs and hybrid modes in this function
     if (mode && !['docs', 'hybrid'].includes(mode)) {
       return new Response(
