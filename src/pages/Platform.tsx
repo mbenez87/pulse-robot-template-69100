@@ -1,115 +1,262 @@
+import React, { useEffect, useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, FileText, Search, Brain, Users, Shield, BarChart3 } from 'lucide-react';
 import ScrollVectors from "@/components/ScrollVectors";
 
-export default function Platform() {
+interface FeatureCardProps {
+  icon: React.ReactNode;
+  tag: string;
+  title: string;
+  description: string;
+  index: number;
+}
+
+const FeatureCard = ({ icon, tag, title, description, index }: FeatureCardProps) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("animate-fade-in");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+    
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, []);
+  
   return (
-    <div className="relative">
+    <div 
+      ref={cardRef}
+      className={cn(
+        "feature-card glass-card opacity-0 p-4 sm:p-6",
+        "lg:hover:bg-gradient-to-br lg:hover:from-white lg:hover:to-pulse-50",
+        "transition-all duration-300"
+      )}
+      style={{ animationDelay: `${0.1 * index}s` }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className="rounded-full bg-pulse-50 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-pulse-500">
+          {icon}
+        </div>
+        <Badge variant="outline" className="text-xs text-pulse-600 border-pulse-200">
+          {tag}
+        </Badge>
+      </div>
+      <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">{title}</h3>
+      <p className="text-gray-600 text-sm sm:text-base">{description}</p>
+    </div>
+  );
+};
+
+const Platform = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const elements = entry.target.querySelectorAll(".fade-in-element");
+            elements.forEach((el, index) => {
+              setTimeout(() => {
+                el.classList.add("animate-fade-in");
+              }, index * 100);
+            });
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+
+  const features = [
+    {
+      icon: <FileText className="w-5 h-5 sm:w-6 sm:h-6" />,
+      tag: "Document Management",
+      title: "Dropbox-style storage & sharing",
+      description: "Folders, search, quick filters, and clean organization with a familiar UX."
+    },
+    {
+      icon: <Brain className="w-5 h-5 sm:w-6 sm:h-6" />,
+      tag: "AI Summaries",
+      title: "Mini-summaries for every document",
+      description: "Summaries are generated on upload and refresh when content changes."
+    },
+    {
+      icon: <Search className="w-5 h-5 sm:w-6 sm:h-6" />,
+      tag: "Multi-Model",
+      title: "ARIA agent (Sonar, Claude, GPT-5, Gemini)",
+      description: "Ask questions across your library or the web with model-level controls."
+    },
+    {
+      icon: <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />,
+      tag: "Compound Input",
+      title: "Powerful query + filters",
+      description: "Combine natural language with file type, date, tag, author, and parameters."
+    },
+    {
+      icon: <Shield className="w-5 h-5 sm:w-6 sm:h-6" />,
+      tag: "Account Isolation",
+      title: "Per-user security",
+      description: "RLS-enforced data separation; new users start with an empty workspace."
+    },
+    {
+      icon: <Users className="w-5 h-5 sm:w-6 sm:h-6" />,
+      tag: "Onboarding",
+      title: "3-day trial with clean redirects",
+      description: "Email confirmations route back to the app; expired trials go to Subscribe."
+    }
+  ];
+
+  return (
+    <div className="relative min-h-screen">
       <ScrollVectors />
 
-      {/* Hero */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 pt-16 pb-10">
-        <span className="inline-block text-xs font-semibold tracking-widest uppercase bg-orange-100 text-orange-700 px-3 py-1 rounded-full">
-          Platform
-        </span>
-        <h1 className="mt-4 text-4xl md:text-5xl font-bold">Your Digital Workspace, Supercharged by AI</h1>
-        <p className="mt-4 text-gray-600 max-w-2xl">
-          Dropbox-style document management with instant AI summaries and ARIA — a multi-model agent that understands your content.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <a href="/signup" className="bg-black text-white px-5 py-3 rounded-lg">Start 3-Day Trial</a>
-          <a href="/contact" className="border px-5 py-3 rounded-lg">Talk to Us</a>
+      {/* Hero Section */}
+      <section className="relative z-10 section-container pt-16 pb-10" ref={sectionRef}>
+        <div className="text-center">
+          <div className="pulse-chip mx-auto mb-3 sm:mb-6 opacity-0 fade-in-element">
+            <span>Platform</span>
+          </div>
+          <h1 className="section-title mb-3 sm:mb-4 opacity-0 fade-in-element">
+            Your Digital Workspace,<br className="hidden sm:block" /> Supercharged by AI
+          </h1>
+          <p className="section-subtitle mx-auto opacity-0 fade-in-element">
+            Dropbox-style document management with instant AI summaries and ARIA — a multi-model agent that understands your content.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6 sm:mt-8 opacity-0 fade-in-element">
+            <Button className="button-primary group">
+              Start 3-Day Trial
+              <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+            <Button variant="outline" className="button-secondary">
+              Talk to Us
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Screenshot */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 pb-16">
-        <div className="rounded-2xl border bg-white/70 backdrop-blur p-3 shadow-sm">
-          {/* Replace the src with your hosted screenshot asset */}
-          <img src="/assets/platform-screenshot.png" alt="Platform UI" className="rounded-xl w-full"/>
-        </div>
-        <p className="text-sm text-gray-500 mt-2">A clean, empty workspace for new accounts.</p>
+      {/* Screenshot Section */}
+      <section className="relative z-10 section-container pb-16">
+        <Card className="glass-card p-3 shadow-elegant">
+          <img 
+            src="/assets/platform-screenshot.png" 
+            alt="Platform UI" 
+            className="rounded-xl w-full"
+            onError={(e) => {
+              // Fallback to existing image if screenshot doesn't exist
+              e.currentTarget.src = "/public/lovable-uploads/af412c03-21e4-4856-82ff-d1a975dc84a9.png";
+            }}
+          />
+        </Card>
+        <p className="text-sm text-muted-foreground mt-2 text-center">A clean, empty workspace for new accounts.</p>
       </section>
 
-      {/* Feature Grid */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 pb-20">
-        <h2 className="text-2xl font-semibold mb-6">Key Capabilities</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {FEATURES.map(f => (
-            <div key={f.title} className="rounded-xl border p-5 bg-white/80 backdrop-blur">
-              <div className="text-sm font-medium text-indigo-600">{f.tag}</div>
-              <h3 className="mt-1 font-semibold text-lg">{f.title}</h3>
-              <p className="mt-2 text-sm text-gray-600">{f.desc}</p>
-            </div>
+      {/* Features Grid */}
+      <section className="relative z-10 section-container pb-20">
+        <div className="text-center mb-10 sm:mb-16">
+          <h2 className="section-title mb-3 sm:mb-4">Key Capabilities</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+          {features.map((feature, index) => (
+            <FeatureCard
+              key={feature.title}
+              icon={feature.icon}
+              tag={feature.tag}
+              title={feature.title}
+              description={feature.description}
+              index={index}
+            />
           ))}
         </div>
       </section>
 
       {/* ARIA Section */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 pb-24">
-        <div className="rounded-2xl border p-8 bg-white/80 backdrop-blur">
-          <h2 className="text-2xl font-semibold">ARIA: Advanced Reasoning & Insight Agent</h2>
-          <p className="mt-3 text-gray-600">
-            Unified access to Sonar (Perplexity), Claude Sonnet, GPT-5, and Gemini. Ask natural questions, run
-            grounded searches, and synthesize answers from your documents.
-          </p>
-          <ul className="mt-5 grid md:grid-cols-2 gap-3 text-sm text-gray-700 list-disc pl-5">
-            <li>Model selector with per-query controls (length, temperature, reasoning depth).</li>
-            <li>Compound input: NL query + filters (type, date, tag, author).</li>
-            <li>Responses blend AI reasoning with doc citations and mini-summaries.</li>
-            <li>Secure, per-user isolation across storage, queries, and outputs.</li>
-          </ul>
-        </div>
+      <section className="relative z-10 section-container pb-24">
+        <Card className="glass-card p-6 sm:p-8">
+          <CardHeader className="px-0 pt-0">
+            <CardTitle className="text-2xl sm:text-3xl font-display">
+              ARIA: Advanced Reasoning & Insight Agent
+            </CardTitle>
+            <CardDescription className="text-base sm:text-lg mt-3">
+              Unified access to Sonar (Perplexity), Claude Sonnet, GPT-5, and Gemini. Ask natural questions, run
+              grounded searches, and synthesize answers from your documents.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-0 pb-0">
+            <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-pulse-500 mt-2 flex-shrink-0"></div>
+                <span>Model selector with per-query controls (length, temperature, reasoning depth).</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-pulse-500 mt-2 flex-shrink-0"></div>
+                <span>Compound input: NL query + filters (type, date, tag, author).</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-pulse-500 mt-2 flex-shrink-0"></div>
+                <span>Responses blend AI reasoning with doc citations and mini-summaries.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-pulse-500 mt-2 flex-shrink-0"></div>
+                <span>Secure, per-user isolation across storage, queries, and outputs.</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
-      {/* CTA */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 pb-28">
-        <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-8">
-          <h3 className="text-2xl font-semibold">Ready to try it?</h3>
-          <p className="mt-2 text-white/90">
-            Sign up for a 3-day trial. After expiry, continue via subscription.
-          </p>
-          <div className="mt-5">
-            <a href="/signup" className="bg-white text-black px-5 py-3 rounded-lg">Create Account</a>
-          </div>
-        </div>
+      {/* CTA Section */}
+      <section className="relative z-10 section-container pb-28">
+        <Card className="bg-gradient-to-r from-pulse-500 to-pulse-600 text-white border-0 p-6 sm:p-8">
+          <CardHeader className="px-0 pt-0">
+            <CardTitle className="text-2xl sm:text-3xl font-display text-white">
+              Ready to try it?
+            </CardTitle>
+            <CardDescription className="text-white/90 text-base sm:text-lg mt-2">
+              Sign up for a 3-day trial. After expiry, continue via subscription.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-0 pb-0">
+            <Button className="bg-white text-pulse-600 hover:bg-gray-50 font-medium py-3 px-6 rounded-full transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]">
+              Create Account
+            </Button>
+          </CardContent>
+        </Card>
       </section>
     </div>
   );
-}
+};
 
-const FEATURES = [
-  {
-    tag: "Document Management",
-    title: "Dropbox-style storage & sharing",
-    desc: "Folders, search, quick filters, and clean organization with a familiar UX."
-  },
-  {
-    tag: "AI Summaries",
-    title: "Mini-summaries for every document",
-    desc: "Summaries are generated on upload and refresh when content changes."
-  },
-  {
-    tag: "Multi-Model",
-    title: "ARIA agent (Sonar, Claude Sonnet, GPT-5, Gemini)",
-    desc: "Ask questions across your library or the web with model-level controls."
-  },
-  {
-    tag: "Compound Input",
-    title: "Powerful query + filters",
-    desc: "Combine natural language with file type, date, tag, author, and parameters."
-  },
-  {
-    tag: "Account Isolation",
-    title: "Per-user security",
-    desc: "RLS-enforced data separation; new users start with an empty workspace."
-  },
-  {
-    tag: "Onboarding",
-    title: "3-day trial with clean redirects",
-    desc: "Email confirmations route back to the app; expired trials go to Subscribe."
-  },
-  {
-    tag: "Pages",
-    title: "About & Contact",
-    desc: "Static pages under the same layout for brand consistency and support."
-  }
-];
+export default Platform;
