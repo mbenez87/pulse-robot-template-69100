@@ -33,11 +33,18 @@ export const useDocuments = (folderId?: string) => {
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('documents')
         .select('*')
-        .eq('user_id', user.id)
-        .eq('parent_folder_id', folderId || null)
+        .eq('user_id', user.id);
+
+      if (folderId) {
+        query = query.eq('parent_folder_id', folderId);
+      } else {
+        query = query.is('parent_folder_id', null);
+      }
+
+      const { data, error } = await query
         .order('is_folder', { ascending: false })
         .order('file_name', { ascending: true });
 
