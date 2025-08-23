@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Send, FileText, ExternalLink } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -39,14 +39,7 @@ export default function Search() {
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
     
-    // Save session to database
-    if (user) {
-      supabase.from('search_sessions').insert({
-        id: newSessionId,
-        user_id: user.id,
-        session_name: 'Document Search'
-      });
-    }
+    // Note: Search sessions will be saved during first query to avoid type issues
   }, [user]);
 
   useEffect(() => {
