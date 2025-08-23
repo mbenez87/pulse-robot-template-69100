@@ -7,7 +7,7 @@ import { SessionSkeleton } from './SessionSkeleton';
 // Configuration
 const LOGIN_ROUTE = '/auth';
 const HOME_ROUTE = '/dashboard';
-const PUBLIC_ROUTES: string[] = [LOGIN_ROUTE, '/', '/about', '/contact', '/platform', '/aria'];
+const PUBLIC_ROUTES = [LOGIN_ROUTE, '/', '/about', '/contact', '/platform', '/aria', '/privacy', '/terms'];
 
 interface AuthGateProps {
   children: ReactNode;
@@ -20,6 +20,16 @@ export const AuthGate = ({ children }: AuthGateProps) => {
   const hasRedirected = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Verify environment variables
+  useEffect(() => {
+    const supabaseUrl = "https://wxeyfpywxuselszycuag.supabase.co";
+    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4ZXlmcHl3eHVzZWxzenljdWFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MDE5NjQsImV4cCI6MjA2NTQ3Nzk2NH0.6zkMI0NrDqrfeZeRsAJGZTXDs3BSvrrSB4m1E2REwC8";
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('AuthGate: Missing Supabase environment variables');
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -84,6 +94,11 @@ export const AuthGate = ({ children }: AuthGateProps) => {
     }
 
     if (shouldRedirect) {
+      if (hasRedirected.current) {
+        console.warn('AuthGate: Attempted double redirect prevented!', { from: currentPath, to: redirectTo });
+        return;
+      }
+      
       hasRedirected.current = true;
       console.log(`AuthGate: Redirecting from ${currentPath} to ${redirectTo}`);
       navigate(redirectTo, { replace: true });

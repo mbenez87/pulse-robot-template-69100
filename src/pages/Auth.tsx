@@ -66,8 +66,8 @@ export default function Auth() {
           setError(error.message);
         }
       } else if (data.user && data.session) {
-        console.log('Sign in successful');
-        // AuthGate will handle redirect to dashboard
+        console.log('Sign in successful - AuthGate will handle redirect');
+        // AuthGate handles all navigation - no manual redirects
         setError('');
         setMessage('');
       }

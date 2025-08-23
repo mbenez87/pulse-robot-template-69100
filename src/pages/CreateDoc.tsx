@@ -68,7 +68,7 @@ export default function CreateDoc() {
         description: "Your document has been created successfully."
       });
       
-      navigate("/dashboard");
+      // Document created successfully - stay on page or let user navigate
     } catch (error) {
       console.error('Error creating document:', error);
       toast({
@@ -136,7 +136,7 @@ export default function CreateDoc() {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => navigate("/dashboard")}
+                onClick={() => window.history.back()}
               >
                 Cancel
               </Button>

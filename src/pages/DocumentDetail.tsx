@@ -137,7 +137,7 @@ const DocumentDetail = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Document Not Found</h1>
-          <Button onClick={() => navigate("/documents")}>
+          <Button onClick={() => window.history.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Documents
           </Button>
@@ -158,7 +158,7 @@ const DocumentDetail = () => {
           <div className="flex items-center gap-4 mb-8">
             <Button 
               variant="outline" 
-              onClick={() => navigate("/documents")}
+              onClick={() => window.history.back()}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />

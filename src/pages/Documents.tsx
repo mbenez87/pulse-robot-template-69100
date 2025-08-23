@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 import DocumentHeader from "@/components/documents/DocumentHeader";
 import DocumentGrid from "@/components/documents/DocumentGrid";
 import DocumentSidebar from "@/components/documents/DocumentSidebar";
@@ -10,7 +9,6 @@ import { PerplexitySearch } from "@/components/documents/PerplexitySearch";
 
 const Documents = () => {
   const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -18,12 +16,7 @@ const Documents = () => {
   const [currentFolderId, setCurrentFolderId] = useState<string | undefined>();
   const [folderPath, setFolderPath] = useState<Array<{ id: string; name: string }>>([]);
 
-  // Redirect to auth if not logged in (should be handled by ProtectedRoute, but extra safety)
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/auth');
-    }
-  }, [isAuthenticated, navigate]);
+  // AuthGate handles authentication - no need for manual redirect logic
 
   const handleFolderChange = (folderId?: string) => {
     setCurrentFolderId(folderId);
@@ -34,10 +27,6 @@ const Documents = () => {
     }
     // For now, simple path management - would need proper implementation
   };
-
-  if (!isAuthenticated) {
-    return null; // ProtectedRoute should handle redirect
-  }
 
   return (
     <div className="min-h-screen bg-background">
