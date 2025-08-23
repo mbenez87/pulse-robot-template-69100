@@ -61,7 +61,7 @@ const Navbar = () => {
           aria-label="Signal87 AI Home"
         >
           <img 
-            src="/brand/signal87-logo.png" 
+            src="/lovable-uploads/331fb3d1-7cea-4b50-8589-07aaaf379ef6.png" 
             alt="Signal87 AI" 
             width="128"
             height="32"
