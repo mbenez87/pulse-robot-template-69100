@@ -142,10 +142,21 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
   }, [selectedIds, documents, downloadDocument]);
 
   // Drag and drop handlers
-  const handleDragStart = useCallback((e: React.DragEvent, document: Document) => {
-    setDraggedDocument(document);
+  const handleDragStart = useCallback((e: React.DragEvent, doc: Document) => {
+    const ids = selectedIds.length ? selectedIds : [doc.id];
+    e.dataTransfer.setData("application/x-doc-ids", JSON.stringify(ids));
     e.dataTransfer.effectAllowed = 'move';
-  }, []);
+    
+    // Create nicer drag image showing count
+    const dragBadge = window.document.createElement("div");
+    dragBadge.style.cssText = "padding:6px 10px;background:#000;color:#fff;border-radius:8px;font:12px system-ui;position:fixed;top:-1000px;";
+    dragBadge.textContent = `${ids.length} item${ids.length > 1 ? 's' : ''}`;
+    window.document.body.appendChild(dragBadge);
+    e.dataTransfer.setDragImage(dragBadge, -10, -10);
+    setTimeout(() => window.document.body.removeChild(dragBadge), 0);
+    
+    setDraggedDocument(doc);
+  }, [selectedIds]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -154,10 +165,13 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
 
   const handleDragEnter = useCallback((e: React.DragEvent, targetDocument: Document) => {
     e.preventDefault();
-    if (targetDocument.is_folder && draggedDocument && draggedDocument.id !== targetDocument.id) {
-      setDragOverDocument(targetDocument.id);
+    if (targetDocument.is_folder) {
+      const draggedIds = JSON.parse(e.dataTransfer.getData("application/x-doc-ids") || "[]");
+      if (!draggedIds.includes(targetDocument.id)) {
+        setDragOverDocument(targetDocument.id);
+      }
     }
-  }, [draggedDocument]);
+  }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -168,15 +182,28 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
     e.preventDefault();
     setDragOverDocument(null);
     
-    if (draggedDocument && targetDocument.is_folder && draggedDocument.id !== targetDocument.id) {
-      await moveDocument(draggedDocument.id, targetDocument.id);
-      toast({
-        title: "Success",
-        description: `Moved "${draggedDocument.file_name}" to "${targetDocument.file_name}"`
-      });
+    try {
+      const draggedIds = JSON.parse(e.dataTransfer.getData("application/x-doc-ids"));
+      
+      if (targetDocument.is_folder && Array.isArray(draggedIds)) {
+        // Move all dragged documents to the target folder
+        for (const draggedId of draggedIds) {
+          if (draggedId !== targetDocument.id) {
+            await moveDocument(draggedId, targetDocument.id);
+          }
+        }
+        
+        toast({
+          title: "Success",
+          description: `Moved ${draggedIds.length} item${draggedIds.length > 1 ? 's' : ''} to "${targetDocument.file_name}"`
+        });
+      }
+    } catch (error) {
+      console.error('Error parsing drag data:', error);
     }
+    
     setDraggedDocument(null);
-  }, [draggedDocument, moveDocument, toast]);
+  }, [moveDocument, toast]);
 
   const handleOpenDocument = useCallback((document: Document) => {
     if (document.is_folder) {
