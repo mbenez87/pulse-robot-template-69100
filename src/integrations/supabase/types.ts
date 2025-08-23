@@ -244,6 +244,148 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_extractions: {
+        Row: {
+          created_at: string | null
+          document_id: string
+          extraction_confidence: number | null
+          extraction_model: string
+          governing_law: Json | null
+          id: string
+          indemnity_clauses: Json | null
+          ip_provisions: Json | null
+          liability_cap: Json | null
+          parties: Json
+          pricing: Json
+          renewal_terms: Json | null
+          risk_rationale: string
+          risk_score: number
+          term_details: Json
+          termination_clauses: Json | null
+          unusual_clauses: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          document_id: string
+          extraction_confidence?: number | null
+          extraction_model: string
+          governing_law?: Json | null
+          id?: string
+          indemnity_clauses?: Json | null
+          ip_provisions?: Json | null
+          liability_cap?: Json | null
+          parties: Json
+          pricing: Json
+          renewal_terms?: Json | null
+          risk_rationale: string
+          risk_score: number
+          term_details: Json
+          termination_clauses?: Json | null
+          unusual_clauses?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          document_id?: string
+          extraction_confidence?: number | null
+          extraction_model?: string
+          governing_law?: Json | null
+          id?: string
+          indemnity_clauses?: Json | null
+          ip_provisions?: Json | null
+          liability_cap?: Json | null
+          parties?: Json
+          pricing?: Json
+          renewal_terms?: Json | null
+          risk_rationale?: string
+          risk_score?: number
+          term_details?: Json
+          termination_clauses?: Json | null
+          unusual_clauses?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_extractions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_obligations: {
+        Row: {
+          completed_at: string | null
+          contract_extraction_id: string
+          created_at: string | null
+          description: string
+          due_date: string
+          id: string
+          notes: string | null
+          notification_date: string | null
+          notification_sent: boolean | null
+          obligation_type: string
+          priority: string | null
+          responsible_party: string
+          status: string | null
+          threshold_amount: number | null
+          threshold_metric: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contract_extraction_id: string
+          created_at?: string | null
+          description: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          notification_date?: string | null
+          notification_sent?: boolean | null
+          obligation_type: string
+          priority?: string | null
+          responsible_party: string
+          status?: string | null
+          threshold_amount?: number | null
+          threshold_metric?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          contract_extraction_id?: string
+          created_at?: string | null
+          description?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          notification_date?: string | null
+          notification_sent?: boolean | null
+          obligation_type?: string
+          priority?: string | null
+          responsible_party?: string
+          status?: string | null
+          threshold_amount?: number | null
+          threshold_metric?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_obligations_contract_extraction_id_fkey"
+            columns: ["contract_extraction_id"]
+            isOneToOne: false
+            referencedRelation: "contract_extractions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_room_files: {
         Row: {
           created_at: string
@@ -1005,6 +1147,136 @@ export type Database = {
         }
         Relationships: []
       }
+      revenue_forecasts: {
+        Row: {
+          acv: number | null
+          ai_narrative: string | null
+          arr: number | null
+          assumptions: string | null
+          confidence_score: number | null
+          contract_extraction_id: string
+          created_at: string | null
+          forecast_month: string
+          id: string
+          projected_revenue: number
+          user_id: string
+          variance_from_previous: number | null
+          variance_percentage: number | null
+        }
+        Insert: {
+          acv?: number | null
+          ai_narrative?: string | null
+          arr?: number | null
+          assumptions?: string | null
+          confidence_score?: number | null
+          contract_extraction_id: string
+          created_at?: string | null
+          forecast_month: string
+          id?: string
+          projected_revenue: number
+          user_id: string
+          variance_from_previous?: number | null
+          variance_percentage?: number | null
+        }
+        Update: {
+          acv?: number | null
+          ai_narrative?: string | null
+          arr?: number | null
+          assumptions?: string | null
+          confidence_score?: number | null
+          contract_extraction_id?: string
+          created_at?: string | null
+          forecast_month?: string
+          id?: string
+          projected_revenue?: number
+          user_id?: string
+          variance_from_previous?: number | null
+          variance_percentage?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_forecasts_contract_extraction_id_fkey"
+            columns: ["contract_extraction_id"]
+            isOneToOne: false
+            referencedRelation: "contract_extractions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revenue_terms: {
+        Row: {
+          billing_frequency: string
+          contract_extraction_id: string
+          created_at: string | null
+          currency: string | null
+          end_date: string | null
+          escalation_rate: number | null
+          id: string
+          minimum_commitment: number | null
+          product_name: string | null
+          quantity: number
+          ramp_schedule: Json | null
+          sku: string
+          start_date: string
+          term_months: number | null
+          unit_price: number
+          updated_at: string | null
+          usage_based: boolean | null
+          usage_tiers: Json | null
+          user_id: string
+        }
+        Insert: {
+          billing_frequency: string
+          contract_extraction_id: string
+          created_at?: string | null
+          currency?: string | null
+          end_date?: string | null
+          escalation_rate?: number | null
+          id?: string
+          minimum_commitment?: number | null
+          product_name?: string | null
+          quantity: number
+          ramp_schedule?: Json | null
+          sku: string
+          start_date: string
+          term_months?: number | null
+          unit_price: number
+          updated_at?: string | null
+          usage_based?: boolean | null
+          usage_tiers?: Json | null
+          user_id: string
+        }
+        Update: {
+          billing_frequency?: string
+          contract_extraction_id?: string
+          created_at?: string | null
+          currency?: string | null
+          end_date?: string | null
+          escalation_rate?: number | null
+          id?: string
+          minimum_commitment?: number | null
+          product_name?: string | null
+          quantity?: number
+          ramp_schedule?: Json | null
+          sku?: string
+          start_date?: string
+          term_months?: number | null
+          unit_price?: number
+          updated_at?: string | null
+          usage_based?: boolean | null
+          usage_tiers?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_terms_contract_extraction_id_fkey"
+            columns: ["contract_extraction_id"]
+            isOneToOne: false
+            referencedRelation: "contract_extractions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       room_tokens: {
         Row: {
           created_at: string | null
@@ -1081,6 +1353,68 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      schema_history: {
+        Row: {
+          ai_model: string
+          approved_at: string | null
+          confidence_score: number | null
+          created_at: string | null
+          document_id: string
+          id: string
+          implemented_at: string | null
+          migration_sql: string | null
+          rejected_reason: string | null
+          schema_description: string | null
+          status: string | null
+          suggested_schema: Json
+          table_names: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_model: string
+          approved_at?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          document_id: string
+          id?: string
+          implemented_at?: string | null
+          migration_sql?: string | null
+          rejected_reason?: string | null
+          schema_description?: string | null
+          status?: string | null
+          suggested_schema: Json
+          table_names?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_model?: string
+          approved_at?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          document_id?: string
+          id?: string
+          implemented_at?: string | null
+          migration_sql?: string | null
+          rejected_reason?: string | null
+          schema_description?: string | null
+          status?: string | null
+          suggested_schema?: Json
+          table_names?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schema_history_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stripe_prices: {
         Row: {
@@ -1423,6 +1757,65 @@ export type Database = {
         }
         Relationships: []
       }
+      work_queue: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string | null
+          description: string
+          due_date: string | null
+          email_draft: string | null
+          id: string
+          obligation_id: string | null
+          priority: string | null
+          status: string | null
+          task_type: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description: string
+          due_date?: string | null
+          email_draft?: string | null
+          id?: string
+          obligation_id?: string | null
+          priority?: string | null
+          status?: string | null
+          task_type: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string
+          due_date?: string | null
+          email_draft?: string | null
+          id?: string
+          obligation_id?: string | null
+          priority?: string | null
+          status?: string | null
+          task_type?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_queue_obligation_id_fkey"
+            columns: ["obligation_id"]
+            isOneToOne: false
+            referencedRelation: "contract_obligations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1431,6 +1824,10 @@ export type Database = {
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
+      }
+      compute_revenue_forecast: {
+        Args: { p_contract_extraction_id: string; p_forecast_months?: number }
+        Returns: undefined
       }
       delete_folder_and_contents: {
         Args: { folder_id_to_delete: string }
