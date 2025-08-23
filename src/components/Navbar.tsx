@@ -5,11 +5,17 @@ import { Menu, X, Home, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isAuthenticated, signOut } = useAuth();
+  const { isAuthenticated } = useAuth();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    // AuthGate will handle redirect to login
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,7 +86,7 @@ const Navbar = () => {
           
           <div className="flex items-center gap-3 ml-6">
             {isAuthenticated ? (
-              <Button variant="outline" onClick={signOut} className="flex items-center gap-2">
+              <Button variant="outline" onClick={handleSignOut} className="flex items-center gap-2">
                 <LogOut className="h-4 w-4" />
                 Sign Out
               </Button>
@@ -183,7 +189,7 @@ const Navbar = () => {
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  signOut();
+                  handleSignOut();
                   setIsMenuOpen(false);
                   document.body.style.overflow = '';
                 }}

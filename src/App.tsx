@@ -39,6 +39,8 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/platform" element={<Platform />} />
               <Route path="/aria" element={<ARIA />} />
+              <Route path="/privacy" element={<div>Privacy Policy</div>} />
+              <Route path="/terms" element={<div>Terms of Service</div>} />
               
               {/* Protected Routes - AuthGate handles protection */}
               <Route path="/documents" element={<Documents />} />
