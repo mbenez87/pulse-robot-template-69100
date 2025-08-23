@@ -9,7 +9,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Documents from "./pages/Documents";
 import DocumentDetail from "./pages/DocumentDetail";
-import Viewer from "./pages/Viewer";
+import DocumentViewer from "./pages/DocumentViewer";
 import RegisterBilling from "./pages/RegisterBilling";
 import Team from "./pages/Team";
 import Auth from "./pages/Auth";
@@ -49,7 +49,7 @@ const App = () => (
               <Route path="/knowledge" element={<Knowledge />} />
               <Route path="/dashboard" element={<Documents />} />
               <Route path="/documents/:id" element={<DocumentDetail />} />
-              <Route path="/viewer/:id" element={<Viewer />} />
+              <Route path="/viewer/:id" element={<DocumentViewer />} />
               <Route path="/register" element={<RegisterBilling />} />
               <Route path="/team" element={<Team />} />
               <Route path="/contracts" element={<Contracts />} />
