@@ -17,7 +17,8 @@ import ARIA from "./pages/ARIA";
 import Search from "./pages/Search";
 import Knowledge from "./pages/Knowledge";
 import Platform from "./pages/Platform";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import Contracts from "./pages/Contracts";
+import { AuthGate } from "./components/AuthGate";
 import { AppLayout } from "./components/AppLayout";
 
 const queryClient = new QueryClient();
@@ -28,28 +29,32 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/auth" element={<Auth />} />
-          <Route element={<AppLayout />}>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/platform" element={<Platform />} />
-            <Route path="/aria" element={<ARIA />} />
-            
-            {/* Protected Routes */}
-            <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
-            <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-            <Route path="/knowledge" element={<ProtectedRoute><Knowledge /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
-            <Route path="/documents/:id" element={<ProtectedRoute><DocumentDetail /></ProtectedRoute>} />
-            <Route path="/register" element={<ProtectedRoute><RegisterBilling /></ProtectedRoute>} />
-            <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
-          </Route>
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthGate>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route element={<AppLayout />}>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/platform" element={<Platform />} />
+              <Route path="/aria" element={<ARIA />} />
+              
+              {/* Protected Routes - AuthGate handles protection */}
+              <Route path="/documents" element={<Documents />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/knowledge" element={<Knowledge />} />
+              <Route path="/dashboard" element={<Documents />} />
+              <Route path="/documents/:id" element={<DocumentDetail />} />
+              <Route path="/register" element={<RegisterBilling />} />
+              <Route path="/team" element={<Team />} />
+              <Route path="/contracts" element={<Contracts />} />
+              <Route path="/create-doc" element={<CreateDoc />} />
+            </Route>
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthGate>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

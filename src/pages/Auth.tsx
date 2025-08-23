@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,24 +14,6 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Only check for existing session once on mount, don't set up listeners
-    const checkExistingSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          console.log('Existing session found, redirecting to dashboard');
-          navigate('/dashboard', { replace: true });
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      }
-    };
-    
-    checkExistingSession();
-  }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,11 +66,10 @@ export default function Auth() {
           setError(error.message);
         }
       } else if (data.user && data.session) {
-        console.log('Sign in successful, redirecting immediately');
-        // Clear form and navigate immediately on successful login
+        console.log('Sign in successful');
+        // AuthGate will handle redirect to dashboard
         setError('');
         setMessage('');
-        navigate('/dashboard', { replace: true });
       }
     } catch (err) {
       console.error('Unexpected sign in error:', err);
