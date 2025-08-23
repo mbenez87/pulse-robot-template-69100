@@ -132,7 +132,7 @@ const Hero = () => {
                 href="#get-access" 
                 className="flex items-center justify-center group w-full sm:w-auto text-center" 
                 style={{
-                  backgroundColor: '#FE5C02',
+                  background: 'linear-gradient(135deg, hsl(199, 89%, 48%) 0%, hsl(204, 94%, 36%) 50%, hsl(209, 96%, 24%) 100%)',
                   borderRadius: '1440px',
                   boxSizing: 'border-box',
                   color: '#FFFFFF',
