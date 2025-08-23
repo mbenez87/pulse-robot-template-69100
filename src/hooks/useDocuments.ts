@@ -126,41 +126,64 @@ export const useDocuments = (folderId?: string) => {
   };
 
   const uploadDocument = async (file: File) => {
-    if (!user) return null;
+    if (!user) {
+      console.error('No user found for upload');
+      return null;
+    }
+
+    console.log(`Starting upload for: ${file.name}, size: ${file.size}, type: ${file.type}`);
 
     try {
       // Upload file to storage
       const fileName = `${crypto.randomUUID()}-${file.name}`;
       const filePath = `${user.id}/${fileName}`;
       
+      console.log(`Uploading to storage path: ${filePath}`);
+      
       const { error: uploadError } = await supabase.storage
         .from('docs')
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('File uploaded to storage successfully');
 
       // Save document metadata
+      const documentData = {
+        user_id: user.id,
+        file_name: file.name,
+        file_type: file.type || 'application/octet-stream',
+        file_size: file.size,
+        storage_path: filePath,
+        is_folder: false,
+        parent_folder_id: folderId || null,
+      };
+
+      console.log('Saving document metadata:', documentData);
+
       const { data, error } = await supabase
         .from('documents')
-        .insert({
-          user_id: user.id,
-          file_name: file.name,
-          file_type: file.type || 'application/octet-stream',
-          file_size: file.size,
-          storage_path: filePath,
-          is_folder: false,
-          parent_folder_id: folderId || null,
-        })
+        .insert(documentData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database insert error:', error);
+        throw error;
+      }
+
+      console.log('Document metadata saved successfully:', data);
 
       // Generate AI summary for the uploaded document
       try {
+        console.log('Generating AI summary for document:', data.id);
         await supabase.functions.invoke('generate-document-summary', {
           body: { documentId: data.id }
         });
+        console.log('AI summary generation initiated');
       } catch (summaryError) {
         console.error('Error generating summary:', summaryError);
         // Don't fail the upload if summary generation fails
@@ -172,12 +195,13 @@ export const useDocuments = (folderId?: string) => {
         description: "File uploaded successfully"
       });
 
+      console.log('Upload process completed successfully');
       return data;
     } catch (err) {
       console.error('Error uploading document:', err);
       toast({
         title: "Error",
-        description: "Failed to upload file",
+        description: `Failed to upload file: ${err.message || 'Unknown error'}`,
         variant: "destructive"
       });
       return null;
