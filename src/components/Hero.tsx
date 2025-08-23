@@ -97,7 +97,7 @@ const Hero = () => {
         padding: isMobile ? '100px 12px 40px' : '120px 20px 60px'
       }}
     >
-      <div className="absolute -top-[10%] -right-[5%] w-1/2 h-[70%] bg-pulse-gradient opacity-20 blur-3xl rounded-full"></div>
+      <div className="absolute -top-[10%] -right-[5%] w-1/2 h-[70%] bg-gradient-to-t from-sky-400/60 via-blue-500/45 to-blue-700/0 opacity-20 blur-3xl rounded-full"></div>
       
       <div className="container px-4 sm:px-6 lg:px-8" ref={containerRef}>
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center">
@@ -170,7 +170,7 @@ const Hero = () => {
                   className="w-full h-auto object-cover transition-transform duration-500 ease-out" 
                   style={{ transformStyle: 'preserve-3d' }} 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-pulse-900/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-sky-400/60 via-blue-500/45 to-blue-700/0"></div>
               </div>
               </>
             )}
