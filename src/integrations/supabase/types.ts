@@ -675,6 +675,7 @@ export type Database = {
       documents: {
         Row: {
           ai_summary: string | null
+          category: string | null
           created_at: string
           file_name: string
           file_size: number
@@ -698,6 +699,7 @@ export type Database = {
         }
         Insert: {
           ai_summary?: string | null
+          category?: string | null
           created_at?: string
           file_name: string
           file_size: number
@@ -721,6 +723,7 @@ export type Database = {
         }
         Update: {
           ai_summary?: string | null
+          category?: string | null
           created_at?: string
           file_name?: string
           file_size?: number
@@ -1943,6 +1946,10 @@ export type Database = {
       delete_folder_and_contents: {
         Args: { folder_id_to_delete: string }
         Returns: undefined
+      }
+      doc_category: {
+        Args: { mime: string; name: string }
+        Returns: string
       }
       generate_share_token: {
         Args: Record<PropertyKey, never>
