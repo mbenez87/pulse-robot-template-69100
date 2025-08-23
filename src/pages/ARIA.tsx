@@ -6,8 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bot, Send, Search, Loader2, Brain, Zap, Sparkles, Globe, Copy, ExternalLink, CheckCircle, AlertCircle, ChevronRight, X } from "lucide-react";
+import { Bot, Send, Search, Loader2, ChevronRight, X, Copy, ExternalLink, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import openaiLogo from "@/assets/openai-logo.svg";
+import geminiLogo from "@/assets/gemini-logo.svg";
+import claudeLogo from "@/assets/claude-logo.png";
+import perplexityLogo from "@/assets/perplexity-logo.png";
 
 interface Citation {
   id: number;
@@ -45,7 +49,7 @@ const MODEL_OPTIONS = [
   { 
     value: 'openai', 
     label: 'GPT-5', 
-    icon: Zap,
+    logo: openaiLogo,
     description: "OpenAI's most advanced model",
     badge: 'Default',
     badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
@@ -53,7 +57,7 @@ const MODEL_OPTIONS = [
   { 
     value: 'google', 
     label: 'Gemini 2.0 Flash', 
-    icon: Sparkles,
+    logo: geminiLogo,
     description: "Google's fastest and most efficient model",
     badge: 'fast',
     badgeColor: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
@@ -61,7 +65,7 @@ const MODEL_OPTIONS = [
   { 
     value: 'anthropic', 
     label: 'Claude 3.5 Sonnet', 
-    icon: Brain,
+    logo: claudeLogo,
     description: "Anthropic's balanced model",
     badge: 'advanced',
     badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
@@ -69,7 +73,7 @@ const MODEL_OPTIONS = [
   { 
     value: 'perplexity', 
     label: 'Sonar Pro', 
-    icon: Globe,
+    logo: perplexityLogo,
     description: "Perplexity's fast model",
     badge: 'real-time',
     badgeColor: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
@@ -281,7 +285,6 @@ export default function ARIA() {
   };
 
   const selectedModelOption = MODEL_OPTIONS.find(m => m.value === selectedModel);
-  const ModelIcon = selectedModelOption?.icon || Brain;
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -397,7 +400,7 @@ export default function ARIA() {
                      <Select value={selectedModel} onValueChange={handleModelChange}>
                        <SelectTrigger className="w-64">
                          <div className="flex items-center gap-2">
-                           <ModelIcon className="h-4 w-4" />
+                           <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-4 w-4" />
                            <div className="flex items-center gap-2">
                              <span>{selectedModelOption?.label}</span>
                              <span className={`px-2 py-0.5 text-xs rounded-full ${selectedModelOption?.badgeColor}`}>
@@ -408,12 +411,11 @@ export default function ARIA() {
                        </SelectTrigger>
                        <SelectContent className="w-80">
                          {MODEL_OPTIONS.map((model) => {
-                           const Icon = model.icon;
                            return (
                              <SelectItem key={model.value} value={model.value} className="py-3">
                                <div className="flex items-center justify-between w-full">
                                  <div className="flex items-center gap-3">
-                                   <Icon className="h-5 w-5 text-muted-foreground" />
+                                   <img src={model.logo} alt={model.label} className="h-5 w-5" />
                                    <div className="flex flex-col">
                                      <div className="flex items-center gap-2">
                                        <span className="font-medium">{model.label}</span>
@@ -459,10 +461,10 @@ export default function ARIA() {
                 </div>
 
                 {/* Helper Text */}
-                <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <ModelIcon className="h-3 w-3" />
-                    <span>Using {selectedModelOption?.label} ({selectedModelOption?.description})</span>
+                 <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                   <div className="flex items-center gap-2">
+                     <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-3 w-3" />
+                     <span>Using {selectedModelOption?.label} ({selectedModelOption?.description})</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <span>Press / to focus</span>
@@ -484,10 +486,10 @@ export default function ARIA() {
                             : 'bg-card border shadow-sm mr-12'
                         }`}>
                           {message.type === 'assistant' && (
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <ModelIcon className="h-3 w-3" />
-                                <span>{message.model}</span>
+                             <div className="flex items-center justify-between mb-3">
+                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                 <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-3 w-3" />
+                                 <span>{message.model}</span>
                                 {message.search_results_count !== undefined && (
                                   <span>• {message.search_results_count} sources</span>
                                 )}
