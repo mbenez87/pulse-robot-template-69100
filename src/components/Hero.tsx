@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
-import LottieAnimation from "./LottieAnimation";
+import DottedGlobe from "./DottedGlobe";
 import ariaDocumentsInterface from "@/assets/aria-documents-interface.png";
 import crmDashboardVector from "@/assets/crm-dashboard-vector.png";
 
@@ -151,30 +151,9 @@ const Hero = () => {
           </div>
           
           <div className="w-full lg:w-1/2 relative mt-6 lg:mt-0">
-            {lottieData ? (
-              <div className="relative z-10 animate-fade-in" style={{ animationDelay: "0.9s" }}>
-                <LottieAnimation 
-                  animationPath={lottieData} 
-                  className="w-full h-auto max-w-lg mx-auto"
-                  loop={true}
-                  autoplay={true}
-                />
-              </div>
-            ) : (
-              <>
-              <div className="absolute inset-0 bg-white rounded-2xl sm:rounded-3xl -z-10 shadow-xl"></div>
-              <div className="relative transition-all duration-500 ease-out overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl">
-                <img 
-                  ref={imageRef} 
-                  src={ariaDocumentsInterface} 
-                  alt="ARIA Document Management Platform Interface" 
-                  className="w-full h-auto object-cover transition-transform duration-500 ease-out" 
-                  style={{ transformStyle: 'preserve-3d' }} 
-                />
-                <div className="absolute inset-0" style={{ backgroundImage: `url(${crmDashboardVector})`, backgroundSize: 'cover', backgroundPosition: 'center', mixBlendMode: 'overlay', opacity: 0.7 }}></div>
-              </div>
-              </>
-            )}
+            <div className="relative z-10 animate-fade-in h-[400px] w-[400px] mx-auto" style={{ animationDelay: "0.9s" }}>
+              <DottedGlobe />
+            </div>
           </div>
         </div>
       </div>
