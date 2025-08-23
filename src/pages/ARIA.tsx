@@ -491,83 +491,69 @@ export default function ARIA() {
                 </div>
               </div>
 
-              {/* Controls - Row A: Primary Controls */}
-              <div className="flex flex-wrap items-center justify-between gap-2 md:gap-3">
-                
-                {/* Left Group - Mode Chips */}
-                <div className="flex flex-wrap gap-2">
-                  {MODE_OPTIONS.map((mode) => {
-                    const Icon = mode.icon;
-                    return (
-                      <button
-                        key={mode.value}
-                        onClick={() => handleModeChange(mode.value as any)}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          selectedMode === mode.value
-                            ? 'bg-primary text-primary-foreground shadow-sm'
-                            : 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted'
-                        }`}
-                      >
-                        <Icon className="h-4 w-4" />
-                        {mode.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Center Group - Model Selector */}
-                <div className="flex-shrink-0">
-                  <Select value={selectedModel} onValueChange={handleModelChange}>
-                    <SelectTrigger className="min-w-[176px] md:min-w-[200px]">
-                      <div className="flex items-center gap-2 w-full">
-                        <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-4 w-4 flex-shrink-0" />
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <span className="truncate">{selectedModelOption?.label}</span>
-                          <span className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${selectedModelOption?.badgeColor}`}>
-                            {selectedModelOption?.badge}
-                          </span>
-                        </div>
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="w-80">
-                      {MODEL_OPTIONS.map((model) => {
-                        return (
-                          <SelectItem key={model.value} value={model.value} className="py-3">
-                            <div className="flex items-center justify-between w-full">
-                              <div className="flex items-center gap-3">
-                                <img src={model.logo} alt={model.label} className="h-5 w-5" />
-                                <div className="flex flex-col">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium">{model.label}</span>
-                                    <span className={`px-2 py-0.5 text-xs rounded-full ${model.badgeColor}`}>
-                                      {model.badge}
-                                    </span>
-                                  </div>
-                                  <span className="text-xs text-muted-foreground mt-0.5">
-                                    {model.description}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Right Group - Real-time badge (if needed) */}
-                <div className="flex items-center gap-2">
-                  {selectedModel === 'perplexity' && selectedMode === 'web' && (
-                    <Badge variant="secondary" className="text-xs">
-                      Real-time
-                    </Badge>
-                  )}
-                </div>
+              {/* Controls - Row A: Mode Chips Only */}
+              <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                {MODE_OPTIONS.map((mode) => {
+                  const Icon = mode.icon;
+                  return (
+                    <button
+                      key={mode.value}
+                      onClick={() => handleModeChange(mode.value as any)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        selectedMode === mode.value
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {mode.label}
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Controls - Row B: Utility (Cross-check toggle right-aligned) */}
-              <div className="flex justify-end mt-1">
+              {/* Controls - Row B: Model Dropdown + Cross-check (right-aligned under arrow) */}
+              <div className="flex justify-end items-center gap-3 mt-1">
+                {/* Model Selector */}
+                <Select value={selectedModel} onValueChange={handleModelChange}>
+                  <SelectTrigger className="min-w-[176px] md:min-w-[200px]">
+                    <div className="flex items-center gap-2 w-full">
+                      <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-4 w-4 flex-shrink-0" />
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <span className="truncate">{selectedModelOption?.label}</span>
+                        <span className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${selectedModelOption?.badgeColor}`}>
+                          {selectedModelOption?.badge}
+                        </span>
+                      </div>
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="w-80">
+                    {MODEL_OPTIONS.map((model) => {
+                      return (
+                        <SelectItem key={model.value} value={model.value} className="py-3">
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-3">
+                              <img src={model.logo} alt={model.label} className="h-5 w-5" />
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{model.label}</span>
+                                  <span className={`px-2 py-0.5 text-xs rounded-full ${model.badgeColor}`}>
+                                    {model.badge}
+                                  </span>
+                                </div>
+                                <span className="text-xs text-muted-foreground mt-0.5">
+                                  {model.description}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+
+                {/* Cross-check Toggle */}
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={verifierEnabled}
