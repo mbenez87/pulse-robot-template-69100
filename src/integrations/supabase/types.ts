@@ -550,7 +550,6 @@ export type Database = {
           created_at: string | null
           display_order: number | null
           education: Json | null
-          email: string | null
           id: string
           image_url: string | null
           leadership_and_boards: Json | null
@@ -568,7 +567,6 @@ export type Database = {
           created_at?: string | null
           display_order?: number | null
           education?: Json | null
-          email?: string | null
           id?: string
           image_url?: string | null
           leadership_and_boards?: Json | null
@@ -586,7 +584,6 @@ export type Database = {
           created_at?: string | null
           display_order?: number | null
           education?: Json | null
-          email?: string | null
           id?: string
           image_url?: string | null
           leadership_and_boards?: Json | null
