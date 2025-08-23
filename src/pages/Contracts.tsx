@@ -227,7 +227,7 @@ const Contracts = () => {
                         <div>
                           <h4 className="font-medium">{contract.documents.file_name}</h4>
                           <p className="text-sm text-muted-foreground">
-                            Parties: {contract.parties.primary_party} ↔ {contract.parties.counterparty}
+                            Parties: {(contract.parties as any)?.primary_party || 'Unknown'} ↔ {(contract.parties as any)?.counterparty || 'Unknown'}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             Analyzed {new Date(contract.created_at).toLocaleDateString()}

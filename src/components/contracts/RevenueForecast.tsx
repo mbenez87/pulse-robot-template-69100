@@ -454,11 +454,11 @@ const RevenueForecast = () => {
                               }>
                                 {parseFloat(forecast.variance_from_previous.toString()) >= 0 ? '+' : ''}
                                 ${parseFloat(forecast.variance_from_previous.toString()).toLocaleString()}
-                                {forecast.variance_percentage && (
-                                  <span className="text-muted-foreground">
-                                    {' '}({parseFloat(forecast.variance_percentage).toFixed(1)}%)
-                                  </span>
-                                )}
+                                 {forecast.variance_percentage && (
+                                   <span className="text-muted-foreground">
+                                     {' '}({parseFloat(forecast.variance_percentage.toString()).toFixed(1)}%)
+                                   </span>
+                                 )}
                               </span>
                             )}
                           </TableCell>

@@ -346,7 +346,7 @@ const SchemaAutoSuggest = () => {
                       
                       <TabsContent value="tables" className="mt-4">
                         <div className="space-y-4">
-                          {schema.suggested_schema?.tables?.map((table: any, index: number) => (
+                          {((schema.suggested_schema as any)?.tables || []).map((table: any, index: number) => (
                             <div key={index} className="border rounded p-3">
                               <div className="flex items-center justify-between mb-2">
                                 <h5 className="font-medium">{table.name}</h5>
