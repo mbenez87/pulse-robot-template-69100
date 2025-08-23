@@ -165,7 +165,7 @@ const Hero = () => {
               <div className="relative transition-all duration-500 ease-out overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl">
                 <img 
                   ref={imageRef} 
-                  src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e" 
+                  src="/lovable-uploads/2d9b9e9c-fa01-497d-af8c-c6475f6d94c6.png" 
                   alt="Advanced humanoid robot with AI capabilities" 
                   className="w-full h-auto object-cover transition-transform duration-500 ease-out" 
                   style={{ transformStyle: 'preserve-3d' }} 
