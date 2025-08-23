@@ -1,30 +1,41 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { 
-  FileText, 
-  Image, 
-  Video, 
-  Archive, 
-  Folder,
-  Plus,
-  FolderPlus
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useState, useCallback } from 'react';
+import { Plus, FolderPlus, MoreHorizontal, Search, Download, Trash2, Edit2, FileText, Folder, Image, Video, Archive, RotateCcw } from 'lucide-react';
+import { Document, useDocuments } from '@/hooks/useDocuments';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import { useDocuments } from "@/hooks/useDocuments";
-import DocumentActions from "./DocumentActions";
-import FolderNavigation from "./FolderNavigation";
-import AIDocumentSearch from "./AIDocumentSearch";
-import AIDocumentActions from "./AIDocumentActions";
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import FolderNavigation from './FolderNavigation';
+import AIDocumentSearch from './AIDocumentSearch';
+import AIDocumentActions from './AIDocumentActions';
+import DocumentActions from './DocumentActions';
+import { FileItem } from './FileItem';
+import { BulkActions } from './BulkActions';
+import { EmptyState } from './EmptyState';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface DocumentGridProps {
   searchQuery: string;
@@ -35,39 +46,24 @@ interface DocumentGridProps {
   folderPath?: Array<{ id: string; name: string }>;
 }
 
-const getFileIcon = (type: string, isFolder: boolean = false) => {
+const getFileIcon = (type: string, isFolder?: boolean) => {
   if (isFolder) return Folder;
-  
-  switch (type) {
-    case "application/pdf":
-    case "text/plain":
-    case "application/msword":
-    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-      return FileText;
-    case "image/jpeg":
-    case "image/png":
-    case "image/gif":
-    case "image/webp":
-      return Image;
-    case "video/mp4":
-    case "video/avi":
-    case "video/mov":
-      return Video;
-    case "application/zip":
-    case "application/x-rar":
-      return Archive;
-    default:
-      return FileText;
-  }
+  if (type.includes('pdf')) return FileText;
+  if (type.includes('doc')) return FileText;
+  if (type.includes('sheet') || type.includes('excel')) return FileText;
+  if (type.startsWith('image/')) return Image;
+  if (type.startsWith('video/')) return Video;
+  if (type.includes('zip') || type.includes('rar')) return Archive;
+  return FileText;
 };
 
-const getFileTypeColor = (type: string, isFolder: boolean = false) => {
-  if (isFolder) return "text-amber-600 bg-amber-50";
-  
-  if (type.startsWith("image/")) return "text-green-600 bg-green-50";
-  if (type.startsWith("video/")) return "text-purple-600 bg-purple-50";
-  if (type.includes("zip") || type.includes("rar")) return "text-orange-600 bg-orange-50";
-  return "text-blue-600 bg-blue-50";
+const getFileTypeColor = (type: string, isFolder?: boolean) => {
+  if (isFolder) return "text-blue-600 bg-blue-50";
+  if (type.includes('pdf')) return "text-red-600 bg-red-50";
+  if (type.includes('doc')) return "text-blue-600 bg-blue-50";
+  if (type.includes('sheet') || type.includes('excel')) return "text-green-600 bg-green-50";
+  if (type.startsWith('image/')) return "text-purple-600 bg-purple-50";
+  return "text-gray-600 bg-gray-50";
 };
 
 const formatFileSize = (bytes: number) => {
@@ -78,66 +74,212 @@ const formatFileSize = (bytes: number) => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
-const DocumentGrid = ({ 
-  searchQuery, 
-  selectedCategory, 
-  viewMode, 
-  currentFolderId,
-  onFolderChange,
-  folderPath = []
-}: DocumentGridProps) => {
-  const navigate = useNavigate();
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
-  const [showCreateFolder, setShowCreateFolder] = useState(false);
-  const [newFolderName, setNewFolderName] = useState("");
+const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId, onFolderChange, folderPath }: DocumentGridProps) => {
+  const [newFolderName, setNewFolderName] = useState('');
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+  const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
+  const [draggedDocument, setDraggedDocument] = useState<Document | null>(null);
+  const [dragOverDocument, setDragOverDocument] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const { documents, loading, createFolder, deleteDocument, downloadDocument } = useDocuments(currentFolderId);
   const { toast } = useToast();
-  
-  const {
-    documents,
-    loading,
-    createFolder,
-    deleteDocument,
-    downloadDocument,
-  } = useDocuments(currentFolderId);
 
+  // Filter documents based on search and category
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch = doc.file_name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || 
-      (selectedCategory === "documents" && !doc.is_folder && (doc.file_type.includes("pdf") || doc.file_type.includes("text") || doc.file_type.includes("word"))) ||
-      (selectedCategory === "images" && !doc.is_folder && doc.file_type.startsWith("image/")) ||
-      (selectedCategory === "videos" && !doc.is_folder && doc.file_type.startsWith("video/")) ||
-      (selectedCategory === "archives" && !doc.is_folder && (doc.file_type.includes("zip") || doc.file_type.includes("rar"))) ||
-      (selectedCategory === "folders" && doc.is_folder);
+    
+    let matchesCategory = true;
+    if (selectedCategory !== "all") {
+      switch (selectedCategory) {
+        case "documents":
+          matchesCategory = !doc.is_folder && (
+            doc.file_type.includes("pdf") || 
+            doc.file_type.includes("doc") || 
+            doc.file_type.includes("text")
+          );
+          break;
+        case "images":
+          matchesCategory = !doc.is_folder && doc.file_type.startsWith("image/");
+          break;
+        case "spreadsheets":
+          matchesCategory = !doc.is_folder && (
+            doc.file_type.includes("sheet") || 
+            doc.file_type.includes("excel")
+          );
+          break;
+        case "pdfs":
+          matchesCategory = !doc.is_folder && doc.file_type.includes("pdf");
+          break;
+        case "folders":
+          matchesCategory = doc.is_folder;
+          break;
+        case "recent":
+          matchesCategory = new Date(doc.updated_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case "trash":
+          // TODO: Implement trash functionality
+          matchesCategory = false;
+          break;
+        default:
+          matchesCategory = true;
+      }
+    }
     
     return matchesSearch && matchesCategory;
   });
 
   const handleCreateFolder = async () => {
-    if (!newFolderName.trim()) return;
-    
-    await createFolder(newFolderName.trim());
-    setNewFolderName("");
-    setShowCreateFolder(false);
+    if (newFolderName.trim()) {
+      await createFolder(newFolderName.trim());
+      setNewFolderName('');
+      setIsCreateFolderOpen(false);
+    }
   };
 
-  const handleDocumentClick = (document: any) => {
+  // Selection handlers
+  const handleSelect = useCallback((id: string, ctrlKey: boolean) => {
+    setSelectedDocuments(prev => {
+      const newSelection = new Set(prev);
+      if (ctrlKey) {
+        if (newSelection.has(id)) {
+          newSelection.delete(id);
+        } else {
+          newSelection.add(id);
+        }
+      } else {
+        newSelection.clear();
+        newSelection.add(id);
+      }
+      return newSelection;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    if (selectedDocuments.size === filteredDocuments.length) {
+      setSelectedDocuments(new Set());
+    } else {
+      setSelectedDocuments(new Set(filteredDocuments.map(doc => doc.id)));
+    }
+  }, [filteredDocuments, selectedDocuments.size]);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedDocuments(new Set());
+  }, []);
+
+  // File operations
+  const handleRename = useCallback(async (id: string, newName: string) => {
+    // TODO: Implement rename functionality
+    toast({
+      title: "Feature coming soon",
+      description: "File renaming will be implemented soon."
+    });
+  }, [toast]);
+
+  const handleDuplicate = useCallback(async (id: string) => {
+    const selectedIds = selectedDocuments.has(id) ? Array.from(selectedDocuments) : [id];
+    // TODO: Implement duplicate functionality
+    toast({
+      title: "Feature coming soon",
+      description: `Duplicating ${selectedIds.length} item${selectedIds.length > 1 ? 's' : ''}...`
+    });
+  }, [selectedDocuments, toast]);
+
+  const handleMove = useCallback(async () => {
+    // TODO: Implement move functionality
+    toast({
+      title: "Feature coming soon",
+      description: `Moving ${selectedDocuments.size} items...`
+    });
+  }, [selectedDocuments.size, toast]);
+
+  const handleBulkDelete = useCallback(async () => {
+    const selectedIds = Array.from(selectedDocuments);
+    for (const id of selectedIds) {
+      await deleteDocument(id);
+    }
+    setSelectedDocuments(new Set());
+    toast({
+      title: "Success",
+      description: `Deleted ${selectedIds.length} item${selectedIds.length > 1 ? 's' : ''}`
+    });
+  }, [selectedDocuments, deleteDocument, toast]);
+
+  const handleBulkDownload = useCallback(async () => {
+    const selectedIds = Array.from(selectedDocuments);
+    const selectedDocs = documents.filter(doc => selectedIds.includes(doc.id));
+    for (const doc of selectedDocs) {
+      if (!doc.is_folder) {
+        await downloadDocument(doc);
+      }
+    }
+  }, [selectedDocuments, documents, downloadDocument]);
+
+  // Drag and drop handlers
+  const handleDragStart = useCallback((e: React.DragEvent, document: Document) => {
+    setDraggedDocument(document);
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const handleDragEnter = useCallback((e: React.DragEvent, targetDocument: Document) => {
+    e.preventDefault();
+    if (targetDocument.is_folder) {
+      setDragOverDocument(targetDocument.id);
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverDocument(null);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, targetDocument: Document) => {
+    e.preventDefault();
+    setDragOverDocument(null);
+    
+    if (draggedDocument && targetDocument.is_folder && draggedDocument.id !== targetDocument.id) {
+      // TODO: Implement move to folder functionality
+      toast({
+        title: "Feature coming soon",
+        description: `Moving "${draggedDocument.file_name}" to "${targetDocument.file_name}"`
+      });
+    }
+    setDraggedDocument(null);
+  }, [draggedDocument, toast]);
+
+  const handleOpenDocument = useCallback((document: Document) => {
     if (document.is_folder) {
       onFolderChange?.(document.id);
     } else {
-      navigate(`/documents/${document.id}`);
+      // TODO: Implement file preview
+      toast({
+        title: "Feature coming soon",
+        description: "File preview will be implemented soon."
+      });
     }
-  };
+  }, [onFolderChange, toast]);
+
+  const handleShare = useCallback((document: Document) => {
+    // TODO: Implement sharing functionality
+    toast({
+      title: "Feature coming soon",
+      description: "File sharing will be implemented soon."
+    });
+  }, [toast]);
 
   // Handle AI Search mode
   if (viewMode === "ai-search") {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <AIDocumentSearch onDocumentSelect={(id) => setSelectedDocumentId(id)} />
+          <AIDocumentSearch onDocumentSelect={() => {}} />
         </div>
         <div>
           <AIDocumentActions 
-            documentId={selectedDocumentId || undefined}
             onAnalysisComplete={(analysis) => {
               toast({
                 title: "Analysis Complete",
@@ -153,31 +295,61 @@ const DocumentGrid = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading documents...</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pulse-600"></div>
       </div>
+    );
+  }
+
+  if (filteredDocuments.length === 0 && !loading) {
+    const emptyStateType = searchQuery ? 'search' : (currentFolderId ? 'folder' : 'all-files');
+    return (
+      <EmptyState
+        type={emptyStateType}
+        searchQuery={searchQuery}
+        folderName={folderPath?.[folderPath.length - 1]?.name}
+        onUpload={() => {/* TODO: Trigger upload modal */}}
+        onCreateFolder={() => setIsCreateFolderOpen(true)}
+        onClearSearch={() => {/* TODO: Clear search */}}
+      />
     );
   }
 
   return (
     <div className="space-y-6">
       {/* Folder Navigation */}
-      {folderPath.length > 0 && (
+      {folderPath && folderPath.length > 0 && (
         <FolderNavigation 
           path={folderPath} 
           onNavigate={onFolderChange} 
         />
       )}
 
-      {/* Actions Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {currentFolderId ? `Folder Contents` : 'All Files'}
+          </h2>
+          {selectedDocuments.size > 0 && (
+            <span className="text-sm text-gray-500">
+              {selectedDocuments.size} of {filteredDocuments.length} selected
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
-          <Dialog open={showCreateFolder} onOpenChange={setShowCreateFolder}>
+          {viewMode === 'list' && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSelectAll}
+              className="gap-2"
+            >
+              {selectedDocuments.size === filteredDocuments.length ? 'Deselect All' : 'Select All'}
+            </Button>
+          )}
+          <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <FolderPlus className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" className="gap-2">
+                <FolderPlus className="h-4 w-4" />
                 New Folder
               </Button>
             </DialogTrigger>
@@ -192,8 +364,8 @@ const DocumentGrid = ({
                   onChange={(e) => setNewFolderName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleCreateFolder()}
                 />
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setShowCreateFolder(false)}>
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
                     Cancel
                   </Button>
                   <Button onClick={handleCreateFolder} disabled={!newFolderName.trim()}>
@@ -206,140 +378,117 @@ const DocumentGrid = ({
         </div>
       </div>
 
-      {/* Empty State */}
-      {filteredDocuments.length === 0 && !loading && (
-        <div className="text-center py-12">
-          <Folder className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            {searchQuery ? 'No documents found' : 'This folder is empty'}
-          </h3>
-          <p className="text-muted-foreground mb-4">
-            {searchQuery ? 'Try adjusting your search terms' : 'Upload files or create folders to get started'}
-          </p>
-        </div>
-      )}
-
-      {/* Document Grid */}
-      {viewMode === "list" ? (
-        <div className="bg-card rounded-lg border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50 border-b">
-                <tr>
-                  <th className="text-left py-3 px-4 font-medium text-foreground">Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-foreground">Size</th>
-                  <th className="text-left py-3 px-4 font-medium text-foreground">Modified</th>
-                  <th className="text-left py-3 px-4 font-medium text-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredDocuments.map((doc) => {
-                  const Icon = getFileIcon(doc.file_type, doc.is_folder);
-                  return (
-                    <tr 
-                      key={doc.id} 
-                      className="hover:bg-muted/50 transition-colors cursor-pointer" 
-                      onClick={() => handleDocumentClick(doc)}
-                    >
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className={cn("p-2 rounded-lg", getFileTypeColor(doc.file_type, doc.is_folder))}>
-                            <Icon className="h-4 w-4" />
-                          </div>
-                        <div className="flex-1">
-                            <p className="font-medium text-foreground truncate">{doc.file_name}</p>
-                            {doc.ai_summary && !doc.is_folder ? (
-                              <p className="text-sm text-muted-foreground truncate mb-1">
-                                {doc.ai_summary}
-                              </p>
-                            ) : (
-                              <p className="text-sm text-muted-foreground">
-                                {doc.is_folder ? 'Folder' : doc.file_type}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-muted-foreground">
-                        {doc.is_folder ? '—' : formatFileSize(doc.file_size)}
-                      </td>
-                      <td className="py-3 px-4 text-muted-foreground">
-                        {new Date(doc.updated_at).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4">
-                        <DocumentActions
-                          document={doc}
-                          onDownload={downloadDocument}
-                          onDelete={deleteDocument}
-                          onOpen={handleDocumentClick}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+      {viewMode === 'list' ? (
+        <div className="bg-white rounded-lg border overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedDocuments.size === filteredDocuments.length && filteredDocuments.length > 0}
+                      onChange={handleSelectAll}
+                      className="h-4 w-4 text-pulse-600 focus:ring-pulse-500 border-gray-300 rounded"
+                    />
+                    Name
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Size
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Modified
+                </th>
+                <th className="relative px-6 py-3">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredDocuments.map((document) => (
+                <FileItem
+                  key={document.id}
+                  document={document}
+                  viewMode="list"
+                  isSelected={selectedDocuments.has(document.id)}
+                  isDragOver={dragOverDocument === document.id}
+                  onSelect={handleSelect}
+                  onOpen={handleOpenDocument}
+                  onRename={handleRename}
+                  onDuplicate={handleDuplicate}
+                  onDelete={(id) => setDeleteConfirmId(id)}
+                  onDownload={downloadDocument}
+                  onShare={handleShare}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                />
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredDocuments.map((doc) => {
-            const Icon = getFileIcon(doc.file_type, doc.is_folder);
-            return (
-              <div
-                key={doc.id}
-                className="bg-card rounded-lg border hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer group"
-                onClick={() => handleDocumentClick(doc)}
-              >
-                {/* File Preview */}
-                <div className="relative h-32 bg-muted/30 rounded-t-lg overflow-hidden">
-                  <div className="flex items-center justify-center h-full">
-                    <div className={cn("p-3 rounded-lg", getFileTypeColor(doc.file_type, doc.is_folder))}>
-                      <Icon className="h-8 w-8" />
-                    </div>
-                  </div>
-                  
-                  {/* Actions Button */}
-                  <div className="absolute top-2 right-2">
-                    <DocumentActions
-                      document={doc}
-                      onDownload={downloadDocument}
-                      onDelete={deleteDocument}
-                      onOpen={handleDocumentClick}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-4">
-                  <h3 className="font-medium text-foreground truncate mb-1">
-                    {doc.file_name}
-                  </h3>
-                  
-                  {doc.ai_summary && !doc.is_folder && (
-                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                      {doc.ai_summary}
-                    </p>
-                  )}
-                  
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>
-                      {doc.is_folder ? 'Folder' : formatFileSize(doc.file_size)}
-                    </span>
-                    <span>
-                      {new Date(doc.updated_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          {filteredDocuments.map((document) => (
+            <FileItem
+              key={document.id}
+              document={document}
+              viewMode="grid"
+              isSelected={selectedDocuments.has(document.id)}
+              isDragOver={dragOverDocument === document.id}
+              onSelect={handleSelect}
+              onOpen={handleOpenDocument}
+              onRename={handleRename}
+              onDuplicate={handleDuplicate}
+              onDelete={(id) => setDeleteConfirmId(id)}
+              onDownload={downloadDocument}
+              onShare={handleShare}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            />
+          ))}
         </div>
       )}
+
+      <BulkActions
+        selectedCount={selectedDocuments.size}
+        onDownload={handleBulkDownload}
+        onDuplicate={() => handleDuplicate(Array.from(selectedDocuments)[0])}
+        onMove={handleMove}
+        onDelete={handleBulkDelete}
+        onClearSelection={handleClearSelection}
+      />
+
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the file from your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (deleteConfirmId) {
+                  await deleteDocument(deleteConfirmId);
+                  setDeleteConfirmId(null);
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-
 };
 
 export default DocumentGrid;

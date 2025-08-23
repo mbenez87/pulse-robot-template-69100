@@ -55,9 +55,28 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
+const ACCEPTED_TYPES = [
+  '.pdf',
+  '.doc', '.docx',
+  '.xls', '.xlsx',
+  '.jpeg', '.jpg', '.png'
+];
+
+const ACCEPTED_MIME_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'image/jpeg',
+  'image/jpg',
+  'image/png'
+];
+
 const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => {
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [overallProgress, setOverallProgress] = useState(0);
   const { uploadDocument } = useDocuments(currentFolderId);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -86,7 +105,18 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
   }, []);
 
   const processFiles = (files: File[]) => {
-    const newUploadFiles: UploadFile[] = files.map(file => ({
+    // Filter for allowed file types
+    const allowedFiles = files.filter(file => {
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      return ACCEPTED_TYPES.includes(fileExtension) || ACCEPTED_MIME_TYPES.includes(file.type);
+    });
+
+    if (allowedFiles.length !== files.length) {
+      // Show error for rejected files
+      console.warn(`${files.length - allowedFiles.length} files were rejected. Only PDF, DOC/DOCX, XLS/XLSX, and JPEG/PNG files are allowed.`);
+    }
+
+    const newUploadFiles: UploadFile[] = allowedFiles.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       file,
       progress: 0,
@@ -95,7 +125,7 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
 
     setUploadFiles(prev => [...prev, ...newUploadFiles]);
 
-    // Upload files
+    // Upload files with progress tracking
     newUploadFiles.forEach(uploadFile => {
       realUpload(uploadFile.id, uploadFile.file);
     });

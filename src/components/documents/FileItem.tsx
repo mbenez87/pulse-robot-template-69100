@@ -1,0 +1,316 @@
+import React, { useState, useRef } from "react";
+import { 
+  File, 
+  Folder, 
+  FileText, 
+  Image, 
+  FileSpreadsheet,
+  MoreHorizontal,
+  Edit2,
+  Copy,
+  Trash2,
+  Download,
+  Share2
+} from "lucide-react";
+import { Document } from "@/hooks/useDocuments";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+};
+
+interface FileItemProps {
+  document: Document;
+  viewMode: 'grid' | 'list';
+  isSelected: boolean;
+  isDragOver: boolean;
+  onSelect: (id: string, ctrlKey: boolean) => void;
+  onOpen: (document: Document) => void;
+  onRename: (id: string, newName: string) => void;
+  onDuplicate: (id: string) => void;
+  onDelete: (id: string) => void;
+  onDownload: (document: Document) => void;
+  onShare: (document: Document) => void;
+  onDragStart: (e: React.DragEvent, document: Document) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDragLeave: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent, targetDocument: Document) => void;
+}
+
+const getFileIcon = (type: string, isFolder?: boolean) => {
+  if (isFolder) return Folder;
+  if (type.includes('pdf')) return FileText;
+  if (type.includes('doc')) return FileText;
+  if (type.includes('sheet') || type.includes('excel')) return FileSpreadsheet;
+  if (type.startsWith('image/')) return Image;
+  return File;
+};
+
+const getFileTypeColor = (type: string, isFolder?: boolean) => {
+  if (isFolder) return "text-blue-600 bg-blue-50";
+  if (type.includes('pdf')) return "text-red-600 bg-red-50";
+  if (type.includes('doc')) return "text-blue-600 bg-blue-50";
+  if (type.includes('sheet') || type.includes('excel')) return "text-green-600 bg-green-50";
+  if (type.startsWith('image/')) return "text-purple-600 bg-purple-50";
+  return "text-gray-600 bg-gray-50";
+};
+
+export const FileItem = ({
+  document,
+  viewMode,
+  isSelected,
+  isDragOver,
+  onSelect,
+  onOpen,
+  onRename,
+  onDuplicate,
+  onDelete,
+  onDownload,
+  onShare,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop
+}: FileItemProps) => {
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newName, setNewName] = useState(document.file_name);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const Icon = getFileIcon(document.file_type, document.is_folder);
+  const colorClass = getFileTypeColor(document.file_type, document.is_folder);
+
+  const handleRename = () => {
+    if (newName.trim() && newName !== document.file_name) {
+      onRename(document.id, newName.trim());
+    }
+    setIsRenaming(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleRename();
+    } else if (e.key === 'Escape') {
+      setNewName(document.file_name);
+      setIsRenaming(false);
+    }
+  };
+
+  const handleDoubleClick = () => {
+    if (document.is_folder) {
+      onOpen(document);
+    } else {
+      setIsRenaming(true);
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  };
+
+  if (viewMode === 'list') {
+    return (
+      <tr
+        className={cn(
+          "group hover:bg-gray-50 cursor-pointer transition-colors",
+          isSelected && "bg-pulse-50",
+          isDragOver && "bg-pulse-100 border-pulse-300"
+        )}
+        draggable
+        onDragStart={(e) => onDragStart(e, document)}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={(e) => onDrop(e, document)}
+        onClick={(e) => onSelect(document.id, e.ctrlKey || e.metaKey)}
+        onDoubleClick={handleDoubleClick}
+      >
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onSelect(document.id, false)}
+              className="h-4 w-4 text-pulse-600 focus:ring-pulse-500 border-gray-300 rounded mr-3"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className={cn("p-2 rounded-lg mr-3", colorClass)}>
+              <Icon className="h-4 w-4" />
+            </div>
+            {isRenaming ? (
+              <Input
+                ref={inputRef}
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onBlur={handleRename}
+                onKeyDown={handleKeyDown}
+                className="w-auto min-w-0"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <span className="text-sm font-medium text-gray-900 truncate">
+                {document.file_name}
+              </span>
+            )}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {document.is_folder ? 'Folder' : formatFileSize(document.file_size)}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {new Date(document.updated_at).toLocaleDateString()}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onOpen(document)}>
+                {document.is_folder ? 'Open' : 'Preview'}
+              </DropdownMenuItem>
+              {!document.is_folder && (
+                <DropdownMenuItem onClick={() => onDownload(document)}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => setIsRenaming(true)}>
+                <Edit2 className="mr-2 h-4 w-4" />
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onDuplicate(document.id)}>
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onShare(document)}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => onDelete(document.id)}
+                className="text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "group relative p-4 rounded-lg border transition-all cursor-pointer",
+        "hover:shadow-md hover:border-pulse-300",
+        isSelected && "bg-pulse-50 border-pulse-300",
+        isDragOver && "bg-pulse-100 border-pulse-400 shadow-lg"
+      )}
+      draggable
+      onDragStart={(e) => onDragStart(e, document)}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={(e) => onDrop(e, document)}
+      onClick={(e) => onSelect(document.id, e.ctrlKey || e.metaKey)}
+      onDoubleClick={handleDoubleClick}
+    >
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={() => onSelect(document.id, false)}
+        className="absolute top-2 left-2 h-4 w-4 text-pulse-600 focus:ring-pulse-500 border-gray-300 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={(e) => e.stopPropagation()}
+      />
+      
+      <div className="flex flex-col items-center space-y-3">
+        <div className={cn("p-3 rounded-lg", colorClass)}>
+          <Icon className="h-8 w-8" />
+        </div>
+        
+        {isRenaming ? (
+          <Input
+            ref={inputRef}
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onBlur={handleRename}
+            onKeyDown={handleKeyDown}
+            className="text-center text-sm"
+            onClick={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <div className="text-center">
+            <h3 className="font-medium text-sm text-gray-900 truncate max-w-[120px]" title={document.file_name}>
+              {document.file_name}
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">
+              {document.is_folder ? 'Folder' : formatFileSize(document.file_size)}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => onOpen(document)}>
+            {document.is_folder ? 'Open' : 'Preview'}
+          </DropdownMenuItem>
+          {!document.is_folder && (
+            <DropdownMenuItem onClick={() => onDownload(document)}>
+              <Download className="mr-2 h-4 w-4" />
+              Download
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onClick={() => setIsRenaming(true)}>
+            <Edit2 className="mr-2 h-4 w-4" />
+            Rename
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onDuplicate(document.id)}>
+            <Copy className="mr-2 h-4 w-4" />
+            Duplicate
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onShare(document)}>
+            <Share2 className="mr-2 h-4 w-4" />
+            Share
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem 
+            onClick={() => onDelete(document.id)}
+            className="text-red-600"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
