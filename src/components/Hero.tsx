@@ -171,7 +171,7 @@ const Hero = () => {
                   className="w-full h-auto object-cover transition-transform duration-500 ease-out" 
                   style={{ transformStyle: 'preserve-3d' }} 
                 />
-                <div className="absolute inset-0" style={{ backgroundImage: `url(${crmDashboardVector})`, backgroundSize: 'cover', backgroundPosition: 'center', mixBlendMode: 'multiply', opacity: 0.8 }}></div>
+                <div className="absolute inset-0" style={{ backgroundImage: `url(${crmDashboardVector})`, backgroundSize: 'cover', backgroundPosition: 'center', mixBlendMode: 'overlay', opacity: 0.7 }}></div>
               </div>
               </>
             )}
