@@ -18,14 +18,29 @@ export default function Auth() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
+    // Check if user is already logged in and redirect
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        console.log('User already authenticated, redirecting to dashboard');
         navigate('/dashboard');
       }
     };
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state change:', event, session ? 'authenticated' : 'not authenticated');
+        if (event === 'SIGNED_IN' && session) {
+          console.log('User signed in, redirecting to dashboard');
+          navigate('/dashboard');
+        }
+      }
+    );
+    
     checkUser();
+    
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -66,21 +81,25 @@ export default function Auth() {
     setMessage('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        console.error('Sign in error:', error);
         if (error.message.includes('Invalid login credentials')) {
           setError('Invalid email or password. Please check your credentials and try again.');
         } else {
           setError(error.message);
         }
-      } else {
-        navigate('/dashboard');
+      } else if (data.user) {
+        console.log('Sign in successful, user:', data.user.id);
+        // Don't navigate here - let the auth state change handler do it
+        setMessage('Sign in successful! Redirecting to dashboard...');
       }
     } catch (err) {
+      console.error('Unexpected sign in error:', err);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
