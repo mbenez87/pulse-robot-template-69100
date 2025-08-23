@@ -16,35 +16,43 @@ interface Message {
 
 const MODEL_OPTIONS = [
   { 
-    value: 'anthropic', 
-    label: 'Anthropic Claude', 
-    icon: Brain,
-    description: 'claude-3-5-sonnet'
-  },
-  { 
     value: 'openai', 
     label: 'GPT-5', 
     icon: Zap,
-    description: 'gpt-5 (fallback to gpt-4o)'
+    description: "OpenAI's most advanced model",
+    badge: 'Default',
+    badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
   },
   { 
     value: 'google', 
-    label: 'Gemini', 
+    label: 'Gemini 2.0 Flash', 
     icon: Sparkles,
-    description: 'gemini-1.5-pro'
+    description: "Google's fastest and most efficient model",
+    badge: 'fast',
+    badgeColor: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+  },
+  { 
+    value: 'anthropic', 
+    label: 'Claude 3.5 Sonnet', 
+    icon: Brain,
+    description: "Anthropic's balanced model",
+    badge: 'advanced',
+    badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
   },
   { 
     value: 'perplexity', 
-    label: 'Perplexity Sonar', 
+    label: 'Sonar Perplexity Pro', 
     icon: Globe,
-    description: 'sonar-large-online'
+    description: "Perplexity's fast model",
+    badge: 'real-time',
+    badgeColor: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
   }
 ];
 
 export default function ARIA() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [selectedModel, setSelectedModel] = useState("anthropic");
+  const [selectedModel, setSelectedModel] = useState("openai");
   const [isLoading, setIsLoading] = useState(false);
   const [userPrefsLoaded, setUserPrefsLoaded] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -241,27 +249,44 @@ export default function ARIA() {
 
                   {/* Model Selector & Submit */}
                   <div className="flex items-center gap-3 pt-2">
-                    <Select value={selectedModel} onValueChange={handleModelChange}>
-                      <SelectTrigger className="w-48">
-                        <div className="flex items-center gap-2">
-                          <ModelIcon className="h-4 w-4" />
-                          <SelectValue />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {MODEL_OPTIONS.map((model) => {
-                          const Icon = model.icon;
-                          return (
-                            <SelectItem key={model.value} value={model.value}>
-                              <div className="flex items-center gap-2">
-                                <Icon className="h-4 w-4" />
-                                <span>{model.label}</span>
-                              </div>
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
+                     <Select value={selectedModel} onValueChange={handleModelChange}>
+                       <SelectTrigger className="w-64">
+                         <div className="flex items-center gap-2">
+                           <ModelIcon className="h-4 w-4" />
+                           <div className="flex items-center gap-2">
+                             <span>{selectedModelOption?.label}</span>
+                             <span className={`px-2 py-0.5 text-xs rounded-full ${selectedModelOption?.badgeColor}`}>
+                               {selectedModelOption?.badge}
+                             </span>
+                           </div>
+                         </div>
+                       </SelectTrigger>
+                       <SelectContent className="w-80">
+                         {MODEL_OPTIONS.map((model) => {
+                           const Icon = model.icon;
+                           return (
+                             <SelectItem key={model.value} value={model.value} className="py-3">
+                               <div className="flex items-center justify-between w-full">
+                                 <div className="flex items-center gap-3">
+                                   <Icon className="h-5 w-5 text-muted-foreground" />
+                                   <div className="flex flex-col">
+                                     <div className="flex items-center gap-2">
+                                       <span className="font-medium">{model.label}</span>
+                                       <span className={`px-2 py-0.5 text-xs rounded-full ${model.badgeColor}`}>
+                                         {model.badge}
+                                       </span>
+                                     </div>
+                                     <span className="text-xs text-muted-foreground mt-0.5">
+                                       {model.description}
+                                     </span>
+                                   </div>
+                                 </div>
+                               </div>
+                             </SelectItem>
+                           );
+                         })}
+                       </SelectContent>
+                     </Select>
 
                     <Button 
                       onClick={handleSubmit} 
