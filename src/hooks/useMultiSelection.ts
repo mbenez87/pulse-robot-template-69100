@@ -10,21 +10,17 @@ export function useMultiSelection({ items }: UseMultiSelectionProps) {
 
   const handleRowClick = useCallback((e: React.MouseEvent, id: string, index: number) => {
     if (e.shiftKey && lastIndex !== null) {
-      // Range selection
-      const [start, end] = [lastIndex, index].sort((a, b) => a - b);
-      const rangeIds = items.slice(start, end + 1).map(item => item.id);
-      const union = Array.from(new Set([...selectedIds, ...rangeIds]));
+      // Range selection - matches your exact logic
+      const [a, b] = [lastIndex, index].sort((x, y) => x - y);
+      const range = items.slice(a, b + 1).map(item => item.id);
+      const union = Array.from(new Set([...selectedIds, ...range]));
       setSelectedIds(union);
     } else if (e.metaKey || e.ctrlKey) {
-      // Toggle selection
-      setSelectedIds(prev => 
-        prev.includes(id) 
-          ? prev.filter(selectedId => selectedId !== id)
-          : [...prev, id]
-      );
+      // Toggle selection - matches your exact logic
+      setSelectedIds(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
       setLastIndex(index);
     } else {
-      // Single selection
+      // Single selection - matches your exact logic
       setSelectedIds([id]);
       setLastIndex(index);
     }
