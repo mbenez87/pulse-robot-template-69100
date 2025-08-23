@@ -95,7 +95,7 @@ const Hero = () => {
       style={{
         background: 'white',
         backgroundPosition: 'center 30%', 
-        padding: isMobile ? '100px 12px 40px' : '120px 20px 60px'
+        padding: isMobile ? '160px 12px 40px' : '200px 20px 60px'
       }}
     >
       <div className="absolute -top-[10%] -right-[5%] w-1/2 h-[70%] bg-white opacity-10 blur-3xl rounded-full"></div>
@@ -133,15 +133,15 @@ const Hero = () => {
                 href="#get-access" 
                 className="flex items-center justify-center group w-full sm:w-auto text-center" 
                 style={{
-                  background: 'white',
+                  background: 'linear-gradient(135deg, hsl(199, 89%, 48%) 0%, hsl(204, 94%, 36%) 50%, hsl(209, 96%, 24%) 100%)',
                   borderRadius: '1440px',
                   boxSizing: 'border-box',
-                  color: '#374151',
+                  color: '#FFFFFF',
                   cursor: 'pointer',
                   fontSize: '14px',
                   lineHeight: '20px',
                   padding: '16px 24px',
-                  border: '1px solid #d1d5db',
+                  border: '1px solid #0ea5e9',
                 }}
               >
                 Try ARIA Free
