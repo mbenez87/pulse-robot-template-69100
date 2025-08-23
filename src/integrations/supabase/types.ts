@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_audit_log: {
+        Row: {
+          created_at: string
+          id: string
+          model_name: string
+          model_provider: string
+          org_id: string | null
+          query: string
+          room_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          model_name: string
+          model_provider: string
+          org_id?: string | null
+          query: string
+          room_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          model_name?: string
+          model_provider?: string
+          org_id?: string | null
+          query?: string
+          room_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       api_keys: {
         Row: {
           created_at: string | null
@@ -1648,6 +1681,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_prefs: {
+        Row: {
+          aria_model: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aria_model?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aria_model?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_subscriptions: {
         Row: {
