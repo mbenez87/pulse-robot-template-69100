@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Plus, FolderPlus, MoreHorizontal, Search, Download, Trash2, Edit2, FileText, Folder, Image, Video, Archive, RotateCcw } from 'lucide-react';
 import { Document, useDocuments } from '@/hooks/useDocuments';
+import { useMultiSelection } from '@/hooks/useMultiSelection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -58,7 +59,6 @@ const formatFileSize = (bytes: number) => {
 const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId, onFolderChange, folderPath }: DocumentGridProps) => {
   const [newFolderName, setNewFolderName] = useState('');
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
-  const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
   const [draggedDocument, setDraggedDocument] = useState<Document | null>(null);
   const [dragOverDocument, setDragOverDocument] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -87,6 +87,17 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
     return matchesSearch && matchesSpecialCategory;
   });
 
+  // Use multi-selection hook
+  const {
+    selectedIds,
+    handleRowClick,
+    selectAll,
+    clearSelection,
+    isSelected,
+    selectedCount,
+    isAllSelected
+  } = useMultiSelection({ items: filteredDocuments });
+
   const handleCreateFolder = async () => {
     if (newFolderName.trim()) {
       await createFolder(newFolderName.trim());
@@ -95,85 +106,40 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
     }
   };
 
-  // Selection handlers
-  const handleSelect = useCallback((id: string, ctrlKey: boolean) => {
-    setSelectedDocuments(prev => {
-      const newSelection = new Set(prev);
-      if (ctrlKey) {
-        if (newSelection.has(id)) {
-          newSelection.delete(id);
-        } else {
-          newSelection.add(id);
-        }
-      } else {
-        newSelection.clear();
-        newSelection.add(id);
-      }
-      return newSelection;
-    });
-  }, []);
-
-  console.log('DocumentGrid - Filtered documents:', filteredDocuments);
-
-  const handleSelectAll = useCallback(() => {
-    if (selectedDocuments.size === filteredDocuments.length) {
-      setSelectedDocuments(new Set());
-    } else {
-      setSelectedDocuments(new Set(filteredDocuments.map(doc => doc.id)));
-    }
-  }, [filteredDocuments, selectedDocuments.size]);
-
-  const handleClearSelection = useCallback(() => {
-    setSelectedDocuments(new Set());
-  }, []);
-
-  // File operations
-  const handleRename = useCallback(async (id: string, newName: string) => {
-    // TODO: Implement rename functionality
-    toast({
-      title: "Feature coming soon",
-      description: "File renaming will be implemented soon."
-    });
-  }, [toast]);
-
   const handleDuplicate = useCallback(async (id: string) => {
-    const selectedIds = selectedDocuments.has(id) ? Array.from(selectedDocuments) : [id];
-    // TODO: Implement duplicate functionality
+    const selectedDocIds = selectedIds.includes(id) ? selectedIds : [id];
     toast({
       title: "Feature coming soon",
-      description: `Duplicating ${selectedIds.length} item${selectedIds.length > 1 ? 's' : ''}...`
+      description: `Duplicating ${selectedDocIds.length} item${selectedDocIds.length > 1 ? 's' : ''}...`
     });
-  }, [selectedDocuments, toast]);
+  }, [selectedIds, toast]);
 
   const handleMove = useCallback(async () => {
-    // TODO: Implement move functionality
     toast({
       title: "Feature coming soon",
-      description: `Moving ${selectedDocuments.size} items...`
+      description: `Moving ${selectedCount} items...`
     });
-  }, [selectedDocuments.size, toast]);
+  }, [selectedCount, toast]);
 
   const handleBulkDelete = useCallback(async () => {
-    const selectedIds = Array.from(selectedDocuments);
     for (const id of selectedIds) {
       await deleteDocument(id);
     }
-    setSelectedDocuments(new Set());
+    clearSelection();
     toast({
       title: "Success",
       description: `Deleted ${selectedIds.length} item${selectedIds.length > 1 ? 's' : ''}`
     });
-  }, [selectedDocuments, deleteDocument, toast]);
+  }, [selectedIds, deleteDocument, clearSelection, toast]);
 
   const handleBulkDownload = useCallback(async () => {
-    const selectedIds = Array.from(selectedDocuments);
     const selectedDocs = documents.filter(doc => selectedIds.includes(doc.id));
     for (const doc of selectedDocs) {
       if (!doc.is_folder) {
         await downloadDocument(doc);
       }
     }
-  }, [selectedDocuments, documents, downloadDocument]);
+  }, [selectedIds, documents, downloadDocument]);
 
   // Drag and drop handlers
   const handleDragStart = useCallback((e: React.DragEvent, document: Document) => {
@@ -290,9 +256,9 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
           <h2 className="text-lg font-semibold text-gray-900">
             {currentFolderId ? `Folder Contents` : 'All Files'}
           </h2>
-          {selectedDocuments.size > 0 && (
+          {selectedCount > 0 && (
             <span className="text-sm text-gray-500">
-              {selectedDocuments.size} of {filteredDocuments.length} selected
+              {selectedCount} of {filteredDocuments.length} selected
             </span>
           )}
         </div>
@@ -301,10 +267,10 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={handleSelectAll}
+              onClick={selectAll}
               className="gap-2"
             >
-              {selectedDocuments.size === filteredDocuments.length ? 'Deselect All' : 'Select All'}
+              {isAllSelected ? 'Deselect All' : 'Select All'}
             </Button>
           )}
           <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
@@ -348,8 +314,8 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={selectedDocuments.size === filteredDocuments.length && filteredDocuments.length > 0}
-                      onChange={handleSelectAll}
+                      checked={isAllSelected}
+                      onChange={selectAll}
                       className="h-4 w-4 text-pulse-600 focus:ring-pulse-500 border-gray-300 rounded"
                     />
                     Name
@@ -367,16 +333,16 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredDocuments.map((document) => (
+              {filteredDocuments.map((document, index) => (
                 <FileItem
                   key={document.id}
                   document={document}
                   viewMode="list"
-                  isSelected={selectedDocuments.has(document.id)}
+                  isSelected={isSelected(document.id)}
                   isDragOver={dragOverDocument === document.id}
-                  onSelect={handleSelect}
+                  onSelect={(id, ctrlKey) => handleRowClick({ ctrlKey } as React.MouseEvent, id, index)}
                   onOpen={handleOpenDocument}
-                  onRename={handleRename}
+                  onRename={() => {}} // TODO: Implement rename
                   onDuplicate={handleDuplicate}
                   onDelete={(id) => setDeleteConfirmId(id)}
                   onDownload={downloadDocument}
@@ -393,16 +359,16 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {filteredDocuments.map((document) => (
+          {filteredDocuments.map((document, index) => (
             <FileItem
               key={document.id}
               document={document}
               viewMode="grid"
-              isSelected={selectedDocuments.has(document.id)}
+              isSelected={isSelected(document.id)}
               isDragOver={dragOverDocument === document.id}
-              onSelect={handleSelect}
+              onSelect={(id, ctrlKey) => handleRowClick({ ctrlKey } as React.MouseEvent, id, index)}
               onOpen={handleOpenDocument}
-              onRename={handleRename}
+              onRename={() => {}} // TODO: Implement rename
               onDuplicate={handleDuplicate}
               onDelete={(id) => setDeleteConfirmId(id)}
               onDownload={downloadDocument}
@@ -418,12 +384,12 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
       )}
 
       <BulkActions
-        selectedCount={selectedDocuments.size}
+        selectedCount={selectedCount}
         onDownload={handleBulkDownload}
-        onDuplicate={() => handleDuplicate(Array.from(selectedDocuments)[0])}
+        onDuplicate={() => handleDuplicate(selectedIds[0])}
         onMove={handleMove}
         onDelete={handleBulkDelete}
-        onClearSelection={handleClearSelection}
+        onClearSelection={clearSelection}
       />
 
       <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
