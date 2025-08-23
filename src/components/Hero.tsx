@@ -104,10 +104,10 @@ const Hero = () => {
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center">
           <div className="w-full lg:w-1/2">
             <div 
-              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 mb-3 sm:mb-6 opacity-0 animate-fade-in" 
+              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white text-gray-800 border border-gray-300 mb-3 sm:mb-6 opacity-0 animate-fade-in" 
               style={{ animationDelay: "0.1s" }}
             >
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-r from-black to-gray-700 text-white mr-2">01</span>
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white text-gray-800 border border-gray-300 mr-2">01</span>
               <span>AI-Powered</span>
             </div>
             
@@ -133,15 +133,15 @@ const Hero = () => {
                 href="#get-access" 
                 className="flex items-center justify-center group w-full sm:w-auto text-center" 
                 style={{
-                  background: 'linear-gradient(135deg, hsl(0, 0%, 10%) 0%, hsl(0, 0%, 30%) 50%, hsl(0, 0%, 90%) 100%)',
+                  background: 'white',
                   borderRadius: '1440px',
                   boxSizing: 'border-box',
-                  color: '#FFFFFF',
+                  color: '#374151',
                   cursor: 'pointer',
                   fontSize: '14px',
                   lineHeight: '20px',
                   padding: '16px 24px',
-                  border: '1px solid white',
+                  border: '1px solid #d1d5db',
                 }}
               >
                 Try ARIA Free
@@ -162,7 +162,7 @@ const Hero = () => {
               </div>
             ) : (
               <>
-              <div className="absolute inset-0 bg-dark-900 rounded-2xl sm:rounded-3xl -z-10 shadow-xl"></div>
+              <div className="absolute inset-0 bg-white rounded-2xl sm:rounded-3xl -z-10 shadow-xl"></div>
               <div className="relative transition-all duration-500 ease-out overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl">
                 <img 
                   ref={imageRef} 
