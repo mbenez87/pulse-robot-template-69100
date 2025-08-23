@@ -1,10 +1,5 @@
 import React, { useState, useRef } from "react";
 import { 
-  File, 
-  Folder, 
-  FileText, 
-  Image, 
-  FileSpreadsheet,
   MoreHorizontal,
   Edit2,
   Copy,
@@ -23,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { FileThumbnail } from "./FileThumbnail";
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 Bytes";
@@ -50,23 +46,6 @@ interface FileItemProps {
   onDrop: (e: React.DragEvent, targetDocument: Document) => void;
 }
 
-const getFileIcon = (type: string, isFolder?: boolean) => {
-  if (isFolder) return Folder;
-  if (type.includes('pdf')) return FileText;
-  if (type.includes('doc')) return FileText;
-  if (type.includes('sheet') || type.includes('excel')) return FileSpreadsheet;
-  if (type.startsWith('image/')) return Image;
-  return File;
-};
-
-const getFileTypeColor = (type: string, isFolder?: boolean) => {
-  if (isFolder) return "text-blue-600 bg-blue-50";
-  if (type.includes('pdf')) return "text-red-600 bg-red-50";
-  if (type.includes('doc')) return "text-blue-600 bg-blue-50";
-  if (type.includes('sheet') || type.includes('excel')) return "text-green-600 bg-green-50";
-  if (type.startsWith('image/')) return "text-purple-600 bg-purple-50";
-  return "text-gray-600 bg-gray-50";
-};
 
 export const FileItem = ({
   document,
@@ -89,8 +68,6 @@ export const FileItem = ({
   const [newName, setNewName] = useState(document.file_name);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const Icon = getFileIcon(document.file_type, document.is_folder);
-  const colorClass = getFileTypeColor(document.file_type, document.is_folder);
 
   const handleRename = () => {
     if (newName.trim() && newName !== document.file_name) {
@@ -142,9 +119,11 @@ export const FileItem = ({
               className="h-4 w-4 text-pulse-600 focus:ring-pulse-500 border-gray-300 rounded mr-3"
               onClick={(e) => e.stopPropagation()}
             />
-            <div className={cn("p-2 rounded-lg mr-3", colorClass)}>
-              <Icon className="h-4 w-4" />
-            </div>
+            <FileThumbnail 
+              document={document} 
+              size="sm" 
+              className="mr-3" 
+            />
             {isRenaming ? (
               <Input
                 ref={inputRef}
@@ -242,9 +221,10 @@ export const FileItem = ({
       />
       
       <div className="flex flex-col items-center space-y-3">
-        <div className={cn("p-3 rounded-lg", colorClass)}>
-          <Icon className="h-8 w-8" />
-        </div>
+        <FileThumbnail 
+          document={document} 
+          size="lg" 
+        />
         
         {isRenaming ? (
           <Input

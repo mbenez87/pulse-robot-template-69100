@@ -46,25 +46,6 @@ interface DocumentGridProps {
   folderPath?: Array<{ id: string; name: string }>;
 }
 
-const getFileIcon = (type: string, isFolder?: boolean) => {
-  if (isFolder) return Folder;
-  if (type.includes('pdf')) return FileText;
-  if (type.includes('doc')) return FileText;
-  if (type.includes('sheet') || type.includes('excel')) return FileText;
-  if (type.startsWith('image/')) return Image;
-  if (type.startsWith('video/')) return Video;
-  if (type.includes('zip') || type.includes('rar')) return Archive;
-  return FileText;
-};
-
-const getFileTypeColor = (type: string, isFolder?: boolean) => {
-  if (isFolder) return "text-blue-600 bg-blue-50";
-  if (type.includes('pdf')) return "text-red-600 bg-red-50";
-  if (type.includes('doc')) return "text-blue-600 bg-blue-50";
-  if (type.includes('sheet') || type.includes('excel')) return "text-green-600 bg-green-50";
-  if (type.startsWith('image/')) return "text-purple-600 bg-purple-50";
-  return "text-gray-600 bg-gray-50";
-};
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0) return "0 B";
