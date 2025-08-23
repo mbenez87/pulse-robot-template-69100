@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import LottieAnimation from "./LottieAnimation";
 import ariaDocumentsInterface from "@/assets/aria-documents-interface.png";
-import crmDashboardVector from "@/assets/crm-dashboard-vector.png";
 
 const Hero = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -93,21 +92,21 @@ const Hero = () => {
       className="overflow-hidden relative bg-cover" 
       id="hero" 
       style={{
-        background: 'white',
+        backgroundImage: 'url("/Header-background.webp")',
         backgroundPosition: 'center 30%', 
-        padding: isMobile ? '160px 12px 40px' : '200px 20px 60px'
+        padding: isMobile ? '100px 12px 40px' : '120px 20px 60px'
       }}
     >
-      <div className="absolute -top-[10%] -right-[5%] w-1/2 h-[70%] bg-white opacity-10 blur-3xl rounded-full"></div>
+      <div className="absolute -top-[10%] -right-[5%] w-1/2 h-[70%] bg-pulse-gradient opacity-20 blur-3xl rounded-full"></div>
       
       <div className="container px-4 sm:px-6 lg:px-8" ref={containerRef}>
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center">
           <div className="w-full lg:w-1/2">
             <div 
-              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white text-gray-800 border border-gray-300 mb-3 sm:mb-6 opacity-0 animate-fade-in" 
+              className="pulse-chip mb-3 sm:mb-6 opacity-0 animate-fade-in" 
               style={{ animationDelay: "0.1s" }}
             >
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white text-gray-800 border border-gray-300 mr-2">01</span>
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-pulse-500 text-white mr-2">01</span>
               <span>AI-Powered</span>
             </div>
             
@@ -133,15 +132,15 @@ const Hero = () => {
                 href="#get-access" 
                 className="flex items-center justify-center group w-full sm:w-auto text-center" 
                 style={{
-                  background: 'linear-gradient(135deg, hsl(199, 89%, 48%) 0%, hsl(204, 94%, 36%) 50%, hsl(209, 96%, 24%) 100%)',
+                  backgroundColor: '#FE5C02',
                   borderRadius: '1440px',
                   boxSizing: 'border-box',
                   color: '#FFFFFF',
                   cursor: 'pointer',
                   fontSize: '14px',
                   lineHeight: '20px',
-                  padding: '16px 24px',
-                  border: '1px solid #0ea5e9',
+                  padding: '16px 24px', // Slightly reduced padding for mobile
+                  border: '1px solid white',
                 }}
               >
                 Try ARIA Free
@@ -162,7 +161,7 @@ const Hero = () => {
               </div>
             ) : (
               <>
-              <div className="absolute inset-0 bg-white rounded-2xl sm:rounded-3xl -z-10 shadow-xl"></div>
+              <div className="absolute inset-0 bg-dark-900 rounded-2xl sm:rounded-3xl -z-10 shadow-xl"></div>
               <div className="relative transition-all duration-500 ease-out overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl">
                 <img 
                   ref={imageRef} 
@@ -171,7 +170,7 @@ const Hero = () => {
                   className="w-full h-auto object-cover transition-transform duration-500 ease-out" 
                   style={{ transformStyle: 'preserve-3d' }} 
                 />
-                <div className="absolute inset-0" style={{ backgroundImage: `url(${crmDashboardVector})`, backgroundSize: 'cover', backgroundPosition: 'center', mixBlendMode: 'overlay', opacity: 0.7 }}></div>
+                <div className="absolute inset-0" style={{ backgroundImage: 'url("/hero-image.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', mixBlendMode: 'overlay', opacity: 0.5 }}></div>
               </div>
               </>
             )}
@@ -179,7 +178,7 @@ const Hero = () => {
         </div>
       </div>
       
-      <div className="hidden lg:block absolute bottom-0 left-1/4 w-64 h-64 bg-white opacity-15 rounded-full blur-3xl -z-10 parallax" data-speed="0.05"></div>
+      <div className="hidden lg:block absolute bottom-0 left-1/4 w-64 h-64 bg-pulse-100/30 rounded-full blur-3xl -z-10 parallax" data-speed="0.05"></div>
     </section>
   );
 };

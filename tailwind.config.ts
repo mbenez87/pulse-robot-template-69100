@@ -63,19 +63,19 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors for Pulse Robot - Gradient Blue
+				// Custom colors for Pulse Robot
 				pulse: {
-					"50": "#f0f9ff",
-					"100": "#e0f2fe", 
-					"200": "#bae6fd",
-					"300": "#7dd3fc",
-					"400": "#38bdf8",
-					"500": "#0ea5e9", // Primary blue
-					"600": "#0284c7",
-					"700": "#0369a1",
-					"800": "#075985",
-					"900": "#0c4a6e",
-					"950": "#082f49",
+					"50": "#fff7ed",
+					"100": "#ffedd5",
+					"200": "#fed7aa",
+					"300": "#fdba74",
+					"400": "#fb923c",
+					"500": "#f97316", // Primary orange
+					"600": "#ea580c",
+					"700": "#c2410c",
+					"800": "#9a3412",
+					"900": "#7c2d12",
+					"950": "#431407",
 				},
 				dark: {
 					"900": "#121212", // Almost black
@@ -139,7 +139,7 @@ export default {
 			backgroundImage: {
 				'hero-gradient': 'linear-gradient(90deg, hsla(0, 0%, 8%, 1) 0%, hsla(0, 0%, 2%, 1) 100%)',
 				'hero-gradient-2': 'linear-gradient(90deg, hsla(0, 0%, 12%, 1) 0%, hsla(0, 0%, 5%, 1) 100%)',
-				'pulse-gradient': 'linear-gradient(135deg, hsl(199, 89%, 48%) 0%, hsl(204, 94%, 36%) 50%, hsl(209, 96%, 24%) 100%)',
+				'pulse-gradient': 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)',
 			},
 			fontFamily: {
 				'sans': ['Inter', 'sans-serif'],
