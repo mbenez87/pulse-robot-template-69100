@@ -675,13 +675,21 @@ export type Database = {
       documents: {
         Row: {
           ai_summary: string | null
+          camera_make: string | null
+          camera_model: string | null
+          capture_at: string | null
           category: string | null
           created_at: string
+          duration_seconds: number | null
           file_name: string
           file_size: number
           file_type: string
+          gps_lat: number | null
+          gps_lon: number | null
+          height: number | null
           id: string
           is_folder: boolean
+          meta: Json | null
           org_id: string
           parent_folder_id: string | null
           path: string | null
@@ -696,16 +704,25 @@ export type Database = {
           updated_at: string
           upload_status: string | null
           user_id: string
+          width: number | null
         }
         Insert: {
           ai_summary?: string | null
+          camera_make?: string | null
+          camera_model?: string | null
+          capture_at?: string | null
           category?: string | null
           created_at?: string
+          duration_seconds?: number | null
           file_name: string
           file_size: number
           file_type: string
+          gps_lat?: number | null
+          gps_lon?: number | null
+          height?: number | null
           id?: string
           is_folder?: boolean
+          meta?: Json | null
           org_id?: string
           parent_folder_id?: string | null
           path?: string | null
@@ -720,16 +737,25 @@ export type Database = {
           updated_at?: string
           upload_status?: string | null
           user_id: string
+          width?: number | null
         }
         Update: {
           ai_summary?: string | null
+          camera_make?: string | null
+          camera_model?: string | null
+          capture_at?: string | null
           category?: string | null
           created_at?: string
+          duration_seconds?: number | null
           file_name?: string
           file_size?: number
           file_type?: string
+          gps_lat?: number | null
+          gps_lon?: number | null
+          height?: number | null
           id?: string
           is_folder?: boolean
+          meta?: Json | null
           org_id?: string
           parent_folder_id?: string | null
           path?: string | null
@@ -744,6 +770,7 @@ export type Database = {
           updated_at?: string
           upload_status?: string | null
           user_id?: string
+          width?: number | null
         }
         Relationships: [
           {
