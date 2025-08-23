@@ -307,10 +307,7 @@ export default function ARIA() {
         verifier: verifierEnabled
       };
 
-      if (selectedMode === 'web') {
-        endpoint = 'web';
-        requestBody = { question: queryText };
-      } else if (selectedMode === 'code') {
+      if (selectedMode === 'code') {
         endpoint = 'code';
         requestBody = {
           instruction: queryText,
@@ -322,7 +319,46 @@ export default function ARIA() {
         body: requestBody
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle web search failure with automatic fallback
+        if (selectedMode === 'web' && (error.message?.includes('provider_error') || error.status >= 400)) {
+          toast({
+            title: "Web search temporarily unavailable",
+            description: "Retrying with Hybrid (docs + citations)...",
+            variant: "destructive"
+          });
+          
+          // Automatically retry with hybrid mode
+          const hybridResponse = await supabase.functions.invoke('query', {
+            body: {
+              ...requestBody,
+              mode: 'hybrid'
+            }
+          });
+          
+          if (hybridResponse.error) throw hybridResponse.error;
+          
+          const assistantMessage: Message = {
+            id: crypto.randomUUID(),
+            type: 'assistant',
+            content: hybridResponse.data.answer || 'No response received',
+            timestamp: new Date(),
+            model: MODEL_OPTIONS.find(m => m.value === selectedModel)?.label,
+            mode: 'hybrid', // Show that we fell back to hybrid
+            citations: hybridResponse.data.citations || [],
+            webResults: [],
+            codeOutput: null,
+            verification: hybridResponse.data.verification || null,
+            search_results_count: hybridResponse.data.search_results_count || 0
+          };
+
+          setMessages(prev => [...prev, assistantMessage]);
+          await logQuery(queryText, selectedModel, 'hybrid', hybridResponse.data.citations || [], []);
+          return;
+        }
+        
+        throw error;
+      }
 
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
