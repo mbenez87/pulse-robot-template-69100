@@ -9,6 +9,9 @@ export const TopMenu = () => {
       <Link to="/dashboard" className="hover:text-primary transition-colors">
         Dashboard
       </Link>
+      <Link to="/platform" className="hover:text-primary transition-colors">
+        Platform
+      </Link>
       <Link to="/about" className="hover:text-primary transition-colors">
         About
       </Link>
