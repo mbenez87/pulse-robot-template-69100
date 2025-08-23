@@ -568,6 +568,41 @@ export type Database = {
           },
         ]
       }
+      document_activity: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          details: Json | null
+          document_id: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          details?: Json | null
+          document_id: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          details?: Json | null
+          document_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_activity_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_chunks: {
         Row: {
           chunk_id: string
@@ -672,6 +707,53 @@ export type Database = {
           },
         ]
       }
+      document_versions: {
+        Row: {
+          checksum: string | null
+          created_at: string
+          created_by: string
+          document_id: string
+          id: string
+          mime_type: string
+          size_bytes: number
+          storage_path: string
+          title: string
+          version: number
+        }
+        Insert: {
+          checksum?: string | null
+          created_at?: string
+          created_by: string
+          document_id: string
+          id?: string
+          mime_type: string
+          size_bytes: number
+          storage_path: string
+          title: string
+          version: number
+        }
+        Update: {
+          checksum?: string | null
+          created_at?: string
+          created_by?: string
+          document_id?: string
+          id?: string
+          mime_type?: string
+          size_bytes?: number
+          storage_path?: string
+          title?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           ai_summary: string | null
@@ -684,13 +766,17 @@ export type Database = {
           file_name: string
           file_size: number
           file_type: string
+          folder_id: string | null
           gps_lat: number | null
           gps_lon: number | null
           height: number | null
           id: string
+          is_deleted: boolean
           is_folder: boolean
           meta: Json | null
+          mime_type: string
           org_id: string
+          owner_id: string
           parent_folder_id: string | null
           path: string | null
           processing_status: string | null
@@ -698,9 +784,11 @@ export type Database = {
           share_expires_at: string | null
           share_link: string | null
           shared_with: string[] | null
+          size_bytes: number
           storage_path: string
+          summary: string | null
           tags: string[] | null
-          title: string | null
+          title: string
           updated_at: string
           upload_status: string | null
           user_id: string
@@ -717,13 +805,17 @@ export type Database = {
           file_name: string
           file_size: number
           file_type: string
+          folder_id?: string | null
           gps_lat?: number | null
           gps_lon?: number | null
           height?: number | null
           id?: string
+          is_deleted?: boolean
           is_folder?: boolean
           meta?: Json | null
+          mime_type: string
           org_id?: string
+          owner_id: string
           parent_folder_id?: string | null
           path?: string | null
           processing_status?: string | null
@@ -731,9 +823,11 @@ export type Database = {
           share_expires_at?: string | null
           share_link?: string | null
           shared_with?: string[] | null
+          size_bytes: number
           storage_path: string
+          summary?: string | null
           tags?: string[] | null
-          title?: string | null
+          title: string
           updated_at?: string
           upload_status?: string | null
           user_id: string
@@ -750,13 +844,17 @@ export type Database = {
           file_name?: string
           file_size?: number
           file_type?: string
+          folder_id?: string | null
           gps_lat?: number | null
           gps_lon?: number | null
           height?: number | null
           id?: string
+          is_deleted?: boolean
           is_folder?: boolean
           meta?: Json | null
+          mime_type?: string
           org_id?: string
+          owner_id?: string
           parent_folder_id?: string | null
           path?: string | null
           processing_status?: string | null
@@ -764,15 +862,24 @@ export type Database = {
           share_expires_at?: string | null
           share_link?: string | null
           shared_with?: string[] | null
+          size_bytes?: number
           storage_path?: string
+          summary?: string | null
           tags?: string[] | null
-          title?: string | null
+          title?: string
           updated_at?: string
           upload_status?: string | null
           user_id?: string
           width?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "documents_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documents_parent_folder_id_fkey"
             columns: ["parent_folder_id"]
@@ -2130,6 +2237,10 @@ export type Database = {
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: string
+      }
+      next_version: {
+        Args: { doc_id: string }
+        Returns: number
       }
       search_document_chunks: {
         Args: {
