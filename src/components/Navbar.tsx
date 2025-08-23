@@ -72,6 +72,7 @@ const Navbar = () => {
           </Link>
           <Link to="/documents" className="nav-link">Documents</Link>
           <Link to="/aria" className="nav-link">ARIA</Link>
+          <Link to="/platform" className="nav-link">Platform</Link>
           <Link to="/about" className="nav-link">About</Link>
           <Link to="/contact" className="nav-link">Contact</Link>
           
@@ -140,6 +141,16 @@ const Navbar = () => {
             }}
           >
             ARIA
+          </Link>
+          <Link 
+            to="/platform" 
+            className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
+            onClick={() => {
+              setIsMenuOpen(false);
+              document.body.style.overflow = '';
+            }}
+          >
+            Platform
           </Link>
           <Link 
             to="/about" 
