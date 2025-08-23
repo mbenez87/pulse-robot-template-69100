@@ -48,22 +48,26 @@ const Navbar = () => {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 py-2 sm:py-3 md:py-4 transition-all duration-300",
+        "fixed top-0 left-0 right-0 z-50 h-14 md:h-16 transition-all duration-300 pt-[env(safe-area-inset-top)]",
         isScrolled 
           ? "bg-white/80 backdrop-blur-md shadow-sm" 
           : "bg-transparent"
       )}
     >
-      <div className="container flex items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="container flex items-center justify-between h-full px-4 md:px-6">
         <Link 
           to="/" 
-          className="flex items-center space-x-2"
-          aria-label="ARIA"
+          className="flex items-center space-x-2 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
+          aria-label="Signal87 AI Home"
         >
           <img 
-            src="/logo.svg" 
-            alt="ARIA Logo" 
-            className="h-7 sm:h-8" 
+            src="/brand/signal87-logo.png" 
+            alt="Signal87 AI" 
+            width="128"
+            height="32"
+            className="h-8 w-auto md:h-9 dark:invert" 
+            loading="eager"
+            decoding="async"
           />
         </Link>
 
@@ -71,17 +75,17 @@ const Navbar = () => {
         <nav className="hidden md:flex items-center space-x-8">
           <Link 
             to="/" 
-            className="nav-link flex items-center gap-2"
+            className="nav-link flex items-center gap-2 min-h-[44px] px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             <Home className="h-4 w-4" />
             Home
           </Link>
-          <Link to="/aria" className="nav-link">ARIA</Link>
-          <Link to="/platform" className="nav-link">Platform</Link>
-          <Link to="/about" className="nav-link">About</Link>
-          <Link to="/contact" className="nav-link">Contact</Link>
+          <Link to="/aria" className="nav-link min-h-[44px] px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">ARIA</Link>
+          <Link to="/platform" className="nav-link min-h-[44px] px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">Platform</Link>
+          <Link to="/about" className="nav-link min-h-[44px] px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">About</Link>
+          <Link to="/contact" className="nav-link min-h-[44px] px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">Contact</Link>
           {isAuthenticated && (
-            <Link to="/dashboard" className="nav-link">Dashboard</Link>
+            <Link to="/dashboard" className="nav-link min-h-[44px] px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">Dashboard</Link>
           )}
           
           <div className="flex items-center gap-3 ml-6">
@@ -105,7 +109,7 @@ const Navbar = () => {
 
         {/* Mobile menu button - increased touch target */}
         <button 
-          className="md:hidden text-gray-700 p-3 focus:outline-none" 
+          className="md:hidden text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md" 
           onClick={toggleMenu}
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         >
@@ -115,13 +119,13 @@ const Navbar = () => {
 
       {/* Mobile Navigation - improved for better touch experience */}
       <div className={cn(
-        "fixed inset-0 z-40 bg-white flex flex-col pt-16 px-6 md:hidden transition-all duration-300 ease-in-out",
+        "fixed inset-0 z-40 bg-white flex flex-col pt-16 px-6 md:hidden transition-all duration-300 ease-in-out pb-[calc(env(safe-area-inset-bottom)+12px)]",
         isMenuOpen ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full pointer-events-none"
       )}>
         <nav className="flex flex-col space-y-6 items-center mt-8">
           <Link 
             to="/" 
-            className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center gap-2" 
+            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
             onClick={() => {
               setIsMenuOpen(false);
               document.body.style.overflow = '';
@@ -132,7 +136,7 @@ const Navbar = () => {
           </Link>
           <Link 
             to="/aria" 
-            className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
+            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
             onClick={() => {
               setIsMenuOpen(false);
               document.body.style.overflow = '';
@@ -142,7 +146,7 @@ const Navbar = () => {
           </Link>
           <Link 
             to="/platform" 
-            className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
+            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
             onClick={() => {
               setIsMenuOpen(false);
               document.body.style.overflow = '';
@@ -152,7 +156,7 @@ const Navbar = () => {
           </Link>
           <Link 
             to="/about" 
-            className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
+            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
             onClick={() => {
               setIsMenuOpen(false);
               document.body.style.overflow = '';
@@ -162,7 +166,7 @@ const Navbar = () => {
           </Link>
           <Link 
             to="/contact" 
-            className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
+            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
             onClick={() => {
               setIsMenuOpen(false);
               document.body.style.overflow = '';
@@ -174,7 +178,7 @@ const Navbar = () => {
           {isAuthenticated && (
             <Link 
               to="/dashboard" 
-              className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
+              className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
               onClick={() => {
                 setIsMenuOpen(false);
                 document.body.style.overflow = '';

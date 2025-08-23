@@ -9,41 +9,23 @@ const MobileCTA = () => {
 
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg"
-      style={{
-        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)",
-        paddingLeft: "max(env(safe-area-inset-left, 0px), 16px)",
-        paddingRight: "max(env(safe-area-inset-right, 0px), 16px)",
-        paddingTop: "12px"
-      }}
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg pb-[calc(env(safe-area-inset-bottom)+12px)] px-4 pt-3"
     >
-      <div className="flex gap-3">
+      <div className="flex gap-3 max-w-sm mx-auto">
         <a
           href="/aria"
-          className="flex-1 flex items-center justify-center bg-[#FE5C02] text-white rounded-full font-medium transition-all duration-200 hover:bg-[#E5520A] active:scale-95"
-          style={{
-            minHeight: "44px",
-            padding: "12px 20px",
-            fontSize: "14px",
-            lineHeight: "20px"
-          }}
+          className="flex-1 flex items-center justify-center bg-primary text-primary-foreground rounded-full font-medium transition-all duration-200 hover:bg-primary/90 active:scale-95 min-h-[44px] px-5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           aria-label="Open ARIA search interface"
         >
           Open ARIA
           <ArrowRight className="ml-2 w-4 h-4" />
         </a>
         <a
-          href="/upload"
-          className="flex-1 flex items-center justify-center border border-gray-300 bg-white text-gray-800 rounded-full font-medium transition-all duration-200 hover:bg-gray-50 active:scale-95"
-          style={{
-            minHeight: "44px",
-            padding: "12px 20px",
-            fontSize: "14px",
-            lineHeight: "20px"
-          }}
-          aria-label="Upload documents to Signal87"
+          href="/dashboard"
+          className="flex-1 flex items-center justify-center border border-input bg-background text-foreground rounded-full font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground active:scale-95 min-h-[44px] px-5 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          aria-label="Go to Dashboard"
         >
-          Upload
+          Dashboard
           <ArrowRight className="ml-2 w-4 h-4" />
         </a>
       </div>

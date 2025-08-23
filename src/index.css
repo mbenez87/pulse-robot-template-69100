@@ -159,12 +159,14 @@ html {
 
   .section-title {
     @apply font-display font-bold tracking-tight text-balance;
-    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    line-height: 1.2;
   }
 
   .section-subtitle {
-    @apply text-gray-600 mt-4 max-w-3xl text-balance leading-snug;
-    font-size: clamp(1rem, 2vw, 1.125rem);
+    @apply text-gray-600 mt-4 max-w-prose text-balance leading-snug;
+    font-size: clamp(1rem, 2.5vw, 1.125rem);
+    line-height: 1.6;
   }
 
   .glass-card {

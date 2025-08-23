@@ -1,0 +1,21 @@
+{
+  "name": "Signal87 AI",
+  "short_name": "Signal87",
+  "description": "Document Intelligence Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/brand/signal87-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
