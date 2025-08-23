@@ -42,6 +42,7 @@ interface FileItemProps {
   onShare: (document: Document) => void;
   onDragStart: (e: React.DragEvent, document: Document) => void;
   onDragOver: (e: React.DragEvent) => void;
+  onDragEnter: (e: React.DragEvent, targetDocument: Document) => void;
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, targetDocument: Document) => void;
 }
@@ -61,6 +62,7 @@ export const FileItem = ({
   onShare,
   onDragStart,
   onDragOver,
+  onDragEnter,
   onDragLeave,
   onDrop
 }: FileItemProps) => {
@@ -104,9 +106,10 @@ export const FileItem = ({
         )}
         draggable
         onDragStart={(e) => onDragStart(e, document)}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={(e) => onDrop(e, document)}
+        onDragOver={document.is_folder ? onDragOver : undefined}
+        onDragEnter={document.is_folder ? (e) => onDragEnter(e, document) : undefined}
+        onDragLeave={document.is_folder ? onDragLeave : undefined}
+        onDrop={document.is_folder ? (e) => onDrop(e, document) : undefined}
         onClick={(e) => onSelect(document.id, e.ctrlKey || e.metaKey)}
         onDoubleClick={handleDoubleClick}
       >
@@ -206,9 +209,10 @@ export const FileItem = ({
       )}
       draggable
       onDragStart={(e) => onDragStart(e, document)}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={(e) => onDrop(e, document)}
+      onDragOver={document.is_folder ? onDragOver : undefined}
+      onDragEnter={document.is_folder ? (e) => onDragEnter(e, document) : undefined}
+      onDragLeave={document.is_folder ? onDragLeave : undefined}
+      onDrop={document.is_folder ? (e) => onDrop(e, document) : undefined}
       onClick={(e) => onSelect(document.id, e.ctrlKey || e.metaKey)}
       onDoubleClick={handleDoubleClick}
     >

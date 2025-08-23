@@ -62,7 +62,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
   const [draggedDocument, setDraggedDocument] = useState<Document | null>(null);
   const [dragOverDocument, setDragOverDocument] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const { documents, loading, createFolder, deleteDocument, downloadDocument } = useDocuments(currentFolderId);
+  const { documents, loading, createFolder, deleteDocument, downloadDocument, moveDocument } = useDocuments(currentFolderId);
   
   console.log('DocumentGrid - Raw documents:', documents);
   console.log('DocumentGrid - Current filter:', { searchQuery, selectedCategory, currentFolderId });
@@ -213,29 +213,29 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
 
   const handleDragEnter = useCallback((e: React.DragEvent, targetDocument: Document) => {
     e.preventDefault();
-    if (targetDocument.is_folder) {
+    if (targetDocument.is_folder && draggedDocument && draggedDocument.id !== targetDocument.id) {
       setDragOverDocument(targetDocument.id);
     }
-  }, []);
+  }, [draggedDocument]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOverDocument(null);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent, targetDocument: Document) => {
+  const handleDrop = useCallback(async (e: React.DragEvent, targetDocument: Document) => {
     e.preventDefault();
     setDragOverDocument(null);
     
     if (draggedDocument && targetDocument.is_folder && draggedDocument.id !== targetDocument.id) {
-      // TODO: Implement move to folder functionality
+      await moveDocument(draggedDocument.id, targetDocument.id);
       toast({
-        title: "Feature coming soon",
-        description: `Moving "${draggedDocument.file_name}" to "${targetDocument.file_name}"`
+        title: "Success",
+        description: `Moved "${draggedDocument.file_name}" to "${targetDocument.file_name}"`
       });
     }
     setDraggedDocument(null);
-  }, [draggedDocument, toast]);
+  }, [draggedDocument, moveDocument, toast]);
 
   const handleOpenDocument = useCallback((document: Document) => {
     if (document.is_folder) {
@@ -408,6 +408,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
                   onShare={handleShare}
                   onDragStart={handleDragStart}
                   onDragOver={handleDragOver}
+                  onDragEnter={handleDragEnter}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                 />
@@ -433,6 +434,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
               onShare={handleShare}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
+              onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             />

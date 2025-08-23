@@ -252,6 +252,30 @@ export const useDocuments = (folderId?: string) => {
     }
   };
 
+  const moveDocument = async (documentId: string, targetFolderId: string | null) => {
+    try {
+      const { error } = await supabase
+        .from('documents')
+        .update({ parent_folder_id: targetFolderId })
+        .eq('id', documentId);
+
+      if (error) throw error;
+
+      await fetchDocuments();
+      toast({
+        title: "Success",
+        description: "Document moved successfully"
+      });
+    } catch (err) {
+      console.error('Error moving document:', err);
+      toast({
+        title: "Error",
+        description: "Failed to move document",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Effect to fetch documents and set up real-time updates
   useEffect(() => {
     if (user) {
@@ -292,5 +316,6 @@ export const useDocuments = (folderId?: string) => {
     deleteDocument,
     uploadDocument,
     downloadDocument,
+    moveDocument,
   };
 };
