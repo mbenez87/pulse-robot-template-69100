@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          id: string
+          is_active: boolean | null
+          key_hash: string
+          org_id: string
+          service_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          id?: string
+          is_active?: boolean | null
+          key_hash: string
+          org_id: string
+          service_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          is_active?: boolean | null
+          key_hash?: string
+          org_id?: string
+          service_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           board_members: Json | null
@@ -297,6 +330,120 @@ export type Database = {
           },
         ]
       }
+      doc_lineage: {
+        Row: {
+          derived_document_id: string
+          id: string
+          operation_details: Json
+          operation_type: string
+          parent_document_id: string
+          performed_at: string | null
+          performed_by: string
+        }
+        Insert: {
+          derived_document_id: string
+          id?: string
+          operation_details: Json
+          operation_type: string
+          parent_document_id: string
+          performed_at?: string | null
+          performed_by: string
+        }
+        Update: {
+          derived_document_id?: string
+          id?: string
+          operation_details?: Json
+          operation_type?: string
+          parent_document_id?: string
+          performed_at?: string | null
+          performed_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doc_lineage_derived_document_id_fkey"
+            columns: ["derived_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doc_lineage_parent_document_id_fkey"
+            columns: ["parent_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_chunks: {
+        Row: {
+          chunk_id: string
+          chunk_index: number
+          confidence: number | null
+          created_at: string | null
+          document_id: string
+          embedding: string | null
+          id: string
+          metadata: Json | null
+          org_id: string | null
+          owner_id: string
+          processing_method: string | null
+          room_id: string | null
+          source_block_id: string | null
+          source_page: number | null
+          text_content: string
+        }
+        Insert: {
+          chunk_id: string
+          chunk_index?: number
+          confidence?: number | null
+          created_at?: string | null
+          document_id: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          org_id?: string | null
+          owner_id: string
+          processing_method?: string | null
+          room_id?: string | null
+          source_block_id?: string | null
+          source_page?: number | null
+          text_content: string
+        }
+        Update: {
+          chunk_id?: string
+          chunk_index?: number
+          confidence?: number | null
+          created_at?: string | null
+          document_id?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          org_id?: string | null
+          owner_id?: string
+          processing_method?: string | null
+          room_id?: string | null
+          source_block_id?: string | null
+          source_page?: number | null
+          text_content?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_source_block_id"
+            columns: ["source_block_id"]
+            isOneToOne: false
+            referencedRelation: "ocr_blocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_shares: {
         Row: {
           created_at: string
@@ -343,6 +490,7 @@ export type Database = {
           is_folder: boolean
           parent_folder_id: string | null
           processing_status: string | null
+          room_id: string | null
           share_expires_at: string | null
           share_link: string | null
           shared_with: string[] | null
@@ -362,6 +510,7 @@ export type Database = {
           is_folder?: boolean
           parent_folder_id?: string | null
           processing_status?: string | null
+          room_id?: string | null
           share_expires_at?: string | null
           share_link?: string | null
           shared_with?: string[] | null
@@ -381,6 +530,7 @@ export type Database = {
           is_folder?: boolean
           parent_folder_id?: string | null
           processing_status?: string | null
+          room_id?: string | null
           share_expires_at?: string | null
           share_link?: string | null
           shared_with?: string[] | null
@@ -396,6 +546,13 @@ export type Database = {
             columns: ["parent_folder_id"]
             isOneToOne: false
             referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
           {
@@ -649,6 +806,94 @@ export type Database = {
         }
         Relationships: []
       }
+      ocr_blocks: {
+        Row: {
+          block_index: number
+          block_type: string | null
+          bounding_box: Json | null
+          confidence: number | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          ocr_page_id: string
+          text_content: string
+        }
+        Insert: {
+          block_index: number
+          block_type?: string | null
+          bounding_box?: Json | null
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          ocr_page_id: string
+          text_content: string
+        }
+        Update: {
+          block_index?: number
+          block_type?: string | null
+          bounding_box?: Json | null
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          ocr_page_id?: string
+          text_content?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ocr_blocks_ocr_page_id_fkey"
+            columns: ["ocr_page_id"]
+            isOneToOne: false
+            referencedRelation: "ocr_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ocr_pages: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          document_id: string
+          id: string
+          language: string | null
+          metadata: Json | null
+          page_number: number
+          processing_method: string | null
+          raw_text: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string | null
+          document_id: string
+          id?: string
+          language?: string | null
+          metadata?: Json | null
+          page_number: number
+          processing_method?: string | null
+          raw_text?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string | null
+          document_id?: string
+          id?: string
+          language?: string | null
+          metadata?: Json | null
+          page_number?: number
+          processing_method?: string | null
+          raw_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ocr_pages_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_perks: {
         Row: {
           category: string | null
@@ -679,6 +924,66 @@ export type Database = {
         }
         Relationships: []
       }
+      pii_detections: {
+        Row: {
+          bounding_box: Json | null
+          confidence: number
+          created_at: string | null
+          detection_type: string
+          document_id: string
+          entity_type: string
+          id: string
+          ocr_block_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          text_content: string
+        }
+        Insert: {
+          bounding_box?: Json | null
+          confidence: number
+          created_at?: string | null
+          detection_type: string
+          document_id: string
+          entity_type: string
+          id?: string
+          ocr_block_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          text_content: string
+        }
+        Update: {
+          bounding_box?: Json | null
+          confidence?: number
+          created_at?: string | null
+          detection_type?: string
+          document_id?: string
+          entity_type?: string
+          id?: string
+          ocr_block_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          text_content?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pii_detections_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pii_detections_ocr_block_id_fkey"
+            columns: ["ocr_block_id"]
+            isOneToOne: false
+            referencedRelation: "ocr_blocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -697,6 +1002,83 @@ export type Database = {
           id?: string
           trial_expires_at?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      room_tokens: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          expires_at: string
+          id: string
+          last_used_at: string | null
+          permissions: Json | null
+          room_id: string
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          expires_at: string
+          id?: string
+          last_used_at?: string | null
+          permissions?: Json | null
+          room_id: string
+          token_hash: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          expires_at?: string
+          id?: string
+          last_used_at?: string | null
+          permissions?: Json | null
+          room_id?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_tokens_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          answer_only_mode: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          org_id: string
+          owner_id: string
+          settings: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          answer_only_mode?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          org_id: string
+          owner_id: string
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          answer_only_mode?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          org_id?: string
+          owner_id?: string
+          settings?: Json | null
+          updated_at?: string | null
         }
         Relationships: []
       }
