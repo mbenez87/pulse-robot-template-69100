@@ -33,7 +33,7 @@ interface FileItemProps {
   viewMode: 'grid' | 'list';
   isSelected: boolean;
   isDragOver: boolean;
-  onSelect: (id: string, ctrlKey: boolean) => void;
+  onSelect: (id: string, ctrlKey: boolean, index?: number) => void;
   onOpen: (document: Document) => void;
   onRename: (id: string, newName: string) => void;
   onDuplicate: (id: string) => void;
@@ -45,8 +45,8 @@ interface FileItemProps {
   onDragEnter: (e: React.DragEvent, targetDocument: Document) => void;
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, targetDocument: Document) => void;
+  index?: number;
 }
-
 
 export const FileItem = ({
   document,
@@ -64,7 +64,8 @@ export const FileItem = ({
   onDragOver,
   onDragEnter,
   onDragLeave,
-  onDrop
+  onDrop,
+  index
 }: FileItemProps) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(document.file_name);
@@ -100,9 +101,9 @@ export const FileItem = ({
     return (
       <tr
         className={cn(
-          "group hover:bg-gray-50 cursor-pointer transition-colors",
-          isSelected && "bg-pulse-50",
-          isDragOver && "bg-pulse-100 border-pulse-300"
+          "group cursor-pointer transition-colors",
+          isSelected ? "bg-primary/10 border-l-4 border-l-primary" : "hover:bg-muted",
+          isDragOver && "bg-primary/20 border-primary/30"
         )}
         draggable
         onDragStart={(e) => onDragStart(e, document)}
@@ -110,7 +111,11 @@ export const FileItem = ({
         onDragEnter={document.is_folder ? (e) => onDragEnter(e, document) : undefined}
         onDragLeave={document.is_folder ? onDragLeave : undefined}
         onDrop={document.is_folder ? (e) => onDrop(e, document) : undefined}
-        onClick={(e) => onSelect(document.id, e.ctrlKey || e.metaKey)}
+        onClick={(e) => {
+          if (index !== undefined) {
+            onSelect(document.id, e.ctrlKey || e.metaKey, index);
+          }
+        }}
         onDoubleClick={handleDoubleClick}
       >
         <td className="px-6 py-4 whitespace-nowrap">
@@ -203,9 +208,9 @@ export const FileItem = ({
     <div
       className={cn(
         "group relative p-4 rounded-lg border transition-all cursor-pointer",
-        "hover:shadow-md hover:border-pulse-300",
-        isSelected && "bg-pulse-50 border-pulse-300",
-        isDragOver && "bg-pulse-100 border-pulse-400 shadow-lg"
+        "hover:shadow-md hover:border-primary/30",
+        isSelected ? "bg-primary/10 border-primary/30 shadow-sm" : "hover:bg-muted/50",
+        isDragOver && "bg-primary/20 border-primary/40 shadow-lg"
       )}
       draggable
       onDragStart={(e) => onDragStart(e, document)}
@@ -213,7 +218,11 @@ export const FileItem = ({
       onDragEnter={document.is_folder ? (e) => onDragEnter(e, document) : undefined}
       onDragLeave={document.is_folder ? onDragLeave : undefined}
       onDrop={document.is_folder ? (e) => onDrop(e, document) : undefined}
-      onClick={(e) => onSelect(document.id, e.ctrlKey || e.metaKey)}
+      onClick={(e) => {
+        if (index !== undefined) {
+          onSelect(document.id, e.ctrlKey || e.metaKey, index);
+        }
+      }}
       onDoubleClick={handleDoubleClick}
     >
       <input

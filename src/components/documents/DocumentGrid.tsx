@@ -367,7 +367,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
                   viewMode="list"
                   isSelected={isSelected(document.id)}
                   isDragOver={dragOverDocument === document.id}
-                  onSelect={(id, ctrlKey) => handleRowClick({ ctrlKey } as React.MouseEvent, id, index)}
+                  onSelect={(id, ctrlKey, idx) => handleRowClick({ ctrlKey } as React.MouseEvent, id, idx || index)}
                   onOpen={handleOpenDocument}
                   onRename={() => {}} // TODO: Implement rename
                   onDuplicate={handleDuplicate}
@@ -379,6 +379,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
                   onDragEnter={handleDragEnter}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
+                  index={index}
                 />
               ))}
             </tbody>
@@ -393,7 +394,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
               viewMode="grid"
               isSelected={isSelected(document.id)}
               isDragOver={dragOverDocument === document.id}
-              onSelect={(id, ctrlKey) => handleRowClick({ ctrlKey } as React.MouseEvent, id, index)}
+              onSelect={(id, ctrlKey, idx) => handleRowClick({ ctrlKey } as React.MouseEvent, id, idx || index)}
               onOpen={handleOpenDocument}
               onRename={() => {}} // TODO: Implement rename
               onDuplicate={handleDuplicate}
@@ -405,6 +406,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
+              index={index}
             />
           ))}
         </div>
