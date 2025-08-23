@@ -151,7 +151,7 @@ const Platform = () => {
             Your Digital Workspace,<br className="hidden sm:block" /> Supercharged by AI
           </h1>
           <p className="section-subtitle mx-auto opacity-0 fade-in-element">
-            Dropbox-style document management with instant AI summaries and ARIA — a multi-model agent that understands your content.
+            Document management with instant AI summaries and ARIA — a multi-model agent that understands your content.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6 sm:mt-8 opacity-0 fade-in-element">
