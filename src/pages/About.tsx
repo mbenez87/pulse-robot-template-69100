@@ -8,7 +8,7 @@ import { Linkedin, Mail, Shield, Search, Zap, Users } from "lucide-react";
 export default function About() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-10 md:py-14 space-y-8 md:space-y-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-16 md:py-20 space-y-8 md:space-y-12">
         
         {/* Hero Section */}
         <div className="text-center space-y-6">
@@ -136,7 +136,7 @@ export default function About() {
               <CardContent className="p-6">
                 <div className="flex flex-col items-center text-center space-y-4">
                   <Avatar className="w-24 h-24 md:w-28 md:h-28">
-                    <AvatarImage src="/images/founders/michael.jpg" alt="Michael Benezra" />
+                    <AvatarImage src="/lovable-uploads/fe4cc13c-618a-49ab-ac51-f8ce8eb8828f.png" alt="Michael Benezra" />
                     <AvatarFallback className="text-xl font-semibold">MB</AvatarFallback>
                   </Avatar>
                   <div>
@@ -169,7 +169,7 @@ export default function About() {
               <CardContent className="p-6">
                 <div className="flex flex-col items-center text-center space-y-4">
                   <Avatar className="w-24 h-24 md:w-28 md:h-28">
-                    <AvatarImage src="/images/founders/jai.jpg" alt="Jai Amin" />
+                    <AvatarImage src="/lovable-uploads/d4203b1a-42ef-4b65-b804-44a3ced04f61.png" alt="Jai Amin" />
                     <AvatarFallback className="text-xl font-semibold">JA</AvatarFallback>
                   </Avatar>
                   <div>
