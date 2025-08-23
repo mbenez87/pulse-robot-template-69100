@@ -98,9 +98,9 @@ const MODEL_OPTIONS = [
 ];
 
 const MODE_OPTIONS = [
-  { value: 'docs', label: 'Docs', icon: FileText, description: 'Search your documents' },
+  { value: 'docs', label: 'Dashboard', icon: FileText, description: 'Search your dashboard' },
   { value: 'web', label: 'Web', icon: Globe, description: 'Search the web' },
-  { value: 'hybrid', label: 'Hybrid', icon: Layers, description: 'Docs + Web' },
+  { value: 'hybrid', label: 'Hybrid', icon: Layers, description: 'Dashboard + Web' },
   { value: 'code', label: 'Code', icon: Code, description: 'Generate code' }
 ];
 
@@ -114,6 +114,9 @@ export default function ARIA() {
   const [verifierEnabled, setVerifierEnabled] = useState(false);
   const [contextFilter, setContextFilter] = useState<ContextFilter>({});
   const [availableRooms, setAvailableRooms] = useState<string[]>([]);
+  const [showProviderStatus, setShowProviderStatus] = useState(false);
+  const [providerHealth, setProviderHealth] = useState<any>(null);
+  const [isCheckingHealth, setIsCheckingHealth] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -338,45 +341,45 @@ export default function ARIA() {
         };
       }
 
-      const { data, error } = await supabase.functions.invoke(endpoint, {
+      const { data, error } = await supabase.functions.invoke('query', {
         body: requestBody
       });
 
       if (error) {
-        // Handle web search failure with automatic fallback
-        if (selectedMode === 'web' && (error.message?.includes('provider_error') || error.status >= 400)) {
+        // Handle provider errors with automatic fallback
+        if (error.message?.includes('provider_error') || error.status >= 400) {
           toast({
-            title: "Web search temporarily unavailable",
-            description: "Retrying with Hybrid (docs + citations)...",
+            title: "Model temporarily unavailable",
+            description: "Retrying with Claude...",
             variant: "destructive"
           });
           
-          // Automatically retry with hybrid mode
-          const hybridResponse = await supabase.functions.invoke('query', {
+          // Automatically retry with Claude
+          const fallbackResponse = await supabase.functions.invoke('query', {
             body: {
               ...requestBody,
-              mode: 'hybrid'
+              model: 'anthropic' // This will map to anthropic:claude-3-5-sonnet
             }
           });
           
-          if (hybridResponse.error) throw hybridResponse.error;
+          if (fallbackResponse.error) throw fallbackResponse.error;
           
           const assistantMessage: Message = {
             id: crypto.randomUUID(),
             type: 'assistant',
-            content: hybridResponse.data.answer || 'No response received',
+            content: fallbackResponse.data.answer || 'No response received',
             timestamp: new Date(),
-            model: MODEL_OPTIONS.find(m => m.value === selectedModel)?.label,
-            mode: 'hybrid', // Show that we fell back to hybrid
-            citations: hybridResponse.data.citations || [],
-            webResults: [],
+            model: 'Claude 3.5 Sonnet', // Show that we fell back to Claude
+            mode: fallbackResponse.data.mode || selectedMode,
+            citations: fallbackResponse.data.citations || [],
+            webResults: fallbackResponse.data.webResults || [],
             codeOutput: null,
-            verification: hybridResponse.data.verification || null,
-            search_results_count: hybridResponse.data.search_results_count || 0
+            verification: fallbackResponse.data.verification || null,
+            search_results_count: fallbackResponse.data.search_results_count || 0
           };
 
           setMessages(prev => [...prev, assistantMessage]);
-          await logQuery(queryText, selectedModel, 'hybrid', hybridResponse.data.citations || [], []);
+          await logQuery(queryText, 'anthropic', fallbackResponse.data.mode || selectedMode, fallbackResponse.data.citations || [], fallbackResponse.data.webResults || []);
           return;
         }
         
@@ -462,6 +465,25 @@ export default function ARIA() {
     }
   };
 
+  const checkProviderHealth = async () => {
+    setIsCheckingHealth(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('health');
+      if (error) throw error;
+      setProviderHealth(data);
+      setShowProviderStatus(true);
+    } catch (error) {
+      console.error('Health check failed:', error);
+      toast({
+        title: "Health check failed",
+        description: "Unable to check provider status",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCheckingHealth(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col pt-[calc(var(--nav-h,72px)+8px)]">
       <div className="flex-1 flex flex-col items-center px-4 py-8">
@@ -530,8 +552,8 @@ export default function ARIA() {
                         }
                       }}
                       onKeyDown={handleKeyPress}
-                      placeholder="Ask anything about your documents…"
-                      aria-label="Ask anything about your documents"
+                      placeholder="Ask anything about your dashboard…"
+                      aria-label="Ask anything about your dashboard"
                       className="w-full resize-none overflow-hidden bg-transparent outline-none leading-relaxed text-base md:text-lg placeholder:text-muted-foreground/60 pr-14 md:pr-16"
                       style={{ height: 'auto', minHeight: '28px' }}
                       disabled={isLoading}
@@ -635,6 +657,67 @@ export default function ARIA() {
                     <span className="hidden sm:inline">Press / to focus</span>
                     <span>Enter to submit • Shift+Enter for new line</span>
                   </div>
+                </div>
+
+                {/* Provider Status (Collapsible) */}
+                <div className="border-t border-border/50 pt-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowProviderStatus(!showProviderStatus)}
+                    className="text-xs text-muted-foreground hover:text-foreground mb-2"
+                  >
+                    Provider Status {showProviderStatus ? '▼' : '▶'}
+                  </Button>
+                  
+                  {showProviderStatus && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={checkProviderHealth}
+                          disabled={isCheckingHealth}
+                          className="text-xs"
+                        >
+                          {isCheckingHealth ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              Checking...
+                            </>
+                          ) : (
+                            'Run Health Check'
+                          )}
+                        </Button>
+                        
+                        {providerHealth && (
+                          <span className="text-xs text-muted-foreground">
+                            Last checked: {new Date(providerHealth.timestamp).toLocaleTimeString()}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {providerHealth && (
+                        <div className="grid grid-cols-2 gap-2">
+                          {providerHealth.results.map((result: any) => (
+                            <div key={result.provider} className="flex items-center gap-2 text-xs">
+                              <div className={`w-2 h-2 rounded-full ${
+                                result.status === 'healthy' ? 'bg-green-500' : 'bg-red-500'
+                              }`} />
+                              <span className={result.status === 'healthy' ? 'text-green-600' : 'text-red-600'}>
+                                {result.provider}
+                              </span>
+                              {result.latency && (
+                                <span className="text-muted-foreground">
+                                  ({result.latency}ms)
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

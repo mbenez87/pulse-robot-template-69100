@@ -7,7 +7,7 @@ export const TopMenu = () => {
         Home
       </Link>
       <Link to="/documents" className="hover:text-primary transition-colors">
-        Documents
+        Dashboard
       </Link>
       <Link to="/search" className="hover:text-primary transition-colors">
         Search

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { callModel } from "../_shared/providerRouter.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -56,11 +57,12 @@ serve(async (req) => {
     }
 
     let citations = [];
+    let contextPassages = '';
     let systemPrompt = "Answer strictly from provided passages; cite each claim; if insufficient information is available, say so clearly.";
     
     if (searchResults && searchResults.length > 0) {
       // Build context from search results
-      const contextPassages = searchResults.map((result, index) => 
+      contextPassages = searchResults.map((result, index) => 
         `[${index + 1}] ${result.text_content} (Source: ${result.doc_title || 'Unknown'}, Page: ${result.page_number || 'N/A'})`
       ).join('\n\n');
 
@@ -129,37 +131,107 @@ ${contextPassages}`;
     // Get response from selected model for docs/hybrid modes
     let response;
     let answer = '';
+    let provider = '';
+    let usage = null;
 
-    switch (model) {
-      case 'anthropic':
-        response = await callAnthropicAPI(question, systemPrompt);
-        answer = response.content[0]?.text || 'No response from Claude';
-        break;
-      
-      case 'openai':
-        response = await callOpenAIAPI(question, systemPrompt);
-        answer = response.choices[0]?.message?.content || 'No response from GPT';
-        break;
-      
-      case 'google':
-        response = await callGeminiAPI(question, systemPrompt);
-        answer = response.candidates[0]?.content?.parts[0]?.text || 'No response from Gemini';
-        break;
-      
-      case 'perplexity':
-        response = await callPerplexityAPI(question, systemPrompt);
-        answer = response.choices[0]?.message?.content || 'No response from Perplexity';
-        break;
-      
-      default:
-        throw new Error(`Unsupported model: ${model}`);
+    // Map UI model values to provider router keys
+    const modelMap: { [key: string]: string } = {
+      'openai': 'openai:gpt-5',
+      'anthropic': 'anthropic:claude-3-5-sonnet', 
+      'google': 'google:gemini-1.5-pro',
+      'perplexity': 'perplexity:sonar-pro'
+    };
+
+    const routerModel = modelMap[model] || 'anthropic:claude-3-5-sonnet';
+    
+    // Build system prompt for the AI model
+    const modelSystemPrompt = searchResults && searchResults.length > 0 
+      ? `Answer the user's question strictly based on the provided document passages. Cite each claim with the source number [1], [2], etc. If the information is insufficient, state that clearly.
+
+Document passages:
+${contextPassages}`
+      : "Answer strictly from provided passages; cite each claim; if insufficient information is available, say so clearly.";
+
+    const modelResponse = await callModel({
+      model: routerModel,
+      messages: [
+        { role: 'system', content: modelSystemPrompt },
+        { role: 'user', content: question }
+      ]
+    });
+
+    if (modelResponse.error) {
+      // Try fallback to Claude if the selected model fails
+      if (routerModel !== 'anthropic:claude-3-5-sonnet') {
+        console.log(`${routerModel} failed, falling back to Claude`);
+        const fallbackResponse = await callModel({
+          model: 'anthropic:claude-3-5-sonnet',
+          messages: [
+            { role: 'system', content: modelSystemPrompt },
+            { role: 'user', content: question }
+          ]
+        });
+        
+        if (!fallbackResponse.error) {
+          answer = fallbackResponse.answer;
+          provider = fallbackResponse.provider || 'anthropic';
+          usage = fallbackResponse.usage;
+        } else {
+          return new Response(
+            JSON.stringify({ 
+              error: `All models unavailable: ${modelResponse.message}`,
+              provider_error: true
+            }),
+            { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } else {
+        return new Response(
+          JSON.stringify({ 
+            error: modelResponse.message,
+            provider_error: true
+          }),
+          { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      answer = modelResponse.answer;
+      provider = modelResponse.provider || model;
+      usage = modelResponse.usage;
+    }
+
+    // Log the query
+    if (org_id) {
+      try {
+        const inputHash = await hashString(question);
+        const outputHash = await hashString(answer);
+        
+        await supabaseClient
+          .from('ai_audit_log')
+          .insert({
+            user_id: null, // Will be set by RLS
+            model_provider: provider,
+            model_name: routerModel,
+            query: question,
+            mode: mode,
+            sources: citations.length > 0 ? ['docs'] : [],
+            inputs_hash: inputHash,
+            outputs_hash: outputHash,
+            citations: JSON.parse(JSON.stringify(citations)),
+            source_doc_ids: citations.map(c => c.doc_id).filter(Boolean),
+            org_id: org_id,
+            room_id: room_id
+          });
+      } catch (logError) {
+        console.error('Error logging query:', logError);
+      }
     }
 
     let verification = null;
 
     // If verifier is enabled, run cross-model verification
     if (verifier && citations.length > 0) {
-      const verificationModel = getAlternativeModel(model);
+      const verificationModel = getAlternativeModel(routerModel);
       const verificationPrompt = `Validate the following answer strictly against the provided citations. Flag any unsupported claims and provide a verification summary.
 
 Answer to verify: ${answer}
@@ -169,11 +241,18 @@ Citations: ${citations.map(c => `[${c.id}] ${c.snippet}`).join('\n')}
 Respond with: SUPPORTED/UNSUPPORTED and brief notes.`;
 
       try {
-        const verificationResponse = await callModelAPI(verificationModel, question, verificationPrompt);
+        const verificationResponse = await callModel({
+          model: verificationModel,
+          messages: [
+            { role: 'system', content: verificationPrompt },
+            { role: 'user', content: question }
+          ]
+        });
+        
         verification = {
           model: verificationModel,
-          supported: verificationResponse.includes('SUPPORTED'),
-          notes: verificationResponse
+          supported: verificationResponse.answer.includes('SUPPORTED'),
+          notes: verificationResponse.answer
         };
       } catch (error) {
         console.error('Verification failed:', error);
@@ -190,6 +269,8 @@ Respond with: SUPPORTED/UNSUPPORTED and brief notes.`;
         answer,
         citations,
         verification,
+        provider,
+        usage,
         search_results_count: searchResults?.length || 0,
         mode: mode // Include the actual mode used (might have fallen back)
       }),
@@ -272,179 +353,13 @@ async function generateEmbedding(text: string): Promise<number[]> {
 }
 
 function getAlternativeModel(currentModel: string): string {
-  const alternatives = {
-    'anthropic': 'openai',
-    'openai': 'anthropic', 
-    'google': 'anthropic',
-    'perplexity': 'anthropic'
+  const alternatives: { [key: string]: string } = {
+    'openai:gpt-5': 'anthropic:claude-3-5-sonnet',
+    'anthropic:claude-3-5-sonnet': 'openai:gpt-5', 
+    'google:gemini-1.5-pro': 'anthropic:claude-3-5-sonnet',
+    'perplexity:sonar-pro': 'anthropic:claude-3-5-sonnet'
   };
-  return alternatives[currentModel] || 'anthropic';
-}
-
-async function callModelAPI(model: string, question: string, systemPrompt: string): Promise<string> {
-  switch (model) {
-    case 'anthropic':
-      const anthResponse = await callAnthropicAPI(question, systemPrompt);
-      return anthResponse.content[0]?.text || '';
-    case 'openai':
-      const openaiResponse = await callOpenAIAPI(question, systemPrompt);
-      return openaiResponse.choices[0]?.message?.content || '';
-    case 'google':
-      const geminiResponse = await callGeminiAPI(question, systemPrompt);
-      return geminiResponse.candidates[0]?.content?.parts[0]?.text || '';
-    case 'perplexity':
-      const perplexityResponse = await callPerplexityAPI(question, systemPrompt);
-      return perplexityResponse.choices[0]?.message?.content || '';
-    default:
-      throw new Error(`Unsupported model: ${model}`);
-  }
-}
-
-async function callAnthropicAPI(question: string, systemPrompt?: string) {
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
-  if (!apiKey) {
-    throw new Error('Anthropic API key not configured');
-  }
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 2000,
-      system: systemPrompt || 'You are a helpful assistant.',
-      messages: [
-        {
-          role: 'user',
-          content: question
-        }
-      ]
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`Anthropic API error: ${response.statusText}`);
-  }
-
-  return await response.json();
-}
-
-async function callOpenAIAPI(question: string, systemPrompt?: string) {
-  const apiKey = Deno.env.get('OPENAI_API_KEY');
-  if (!apiKey) {
-    throw new Error('OpenAI API key not configured');
-  }
-
-  // Try GPT-5 first, fallback to GPT-4o
-  let model = 'gpt-5-2025-08-07';
-  let requestBody = {
-    model,
-    messages: systemPrompt ? [
-      {
-        role: 'system',
-        content: systemPrompt
-      },
-      {
-        role: 'user',
-        content: question
-      }
-    ] : [
-      {
-        role: 'user',
-        content: question
-      }
-    ],
-    max_completion_tokens: 2000
-  };
-
-  let response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(requestBody)
-  });
-
-  // If GPT-5 fails, fallback to GPT-4o
-  if (!response.ok) {
-    console.log('GPT-5 failed, falling back to GPT-4o');
-    model = 'gpt-4o';
-    requestBody = {
-      model,
-      messages: systemPrompt ? [
-        {
-          role: 'system',
-          content: systemPrompt
-        },
-        {
-          role: 'user',
-          content: question
-        }
-      ] : [
-        {
-          role: 'user',
-          content: question
-        }
-      ],
-      max_tokens: 2000,
-      temperature: 0.7
-    };
-
-    response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(requestBody)
-    });
-  }
-
-  if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.statusText}`);
-  }
-
-  return await response.json();
-}
-
-async function callGeminiAPI(question: string, systemPrompt?: string) {
-  const apiKey = Deno.env.get('GEMINI_API_KEY');
-  if (!apiKey) {
-    throw new Error('Gemini API key not configured');
-  }
-
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              text: systemPrompt ? `${systemPrompt}\n\nQuestion: ${question}` : question
-            }
-          ]
-        }
-      ],
-      generationConfig: {
-        maxOutputTokens: 2000,
-        temperature: 0.7
-      }
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`Gemini API error: ${response.statusText}`);
-  }
-
-  return await response.json();
+  return alternatives[currentModel] || 'anthropic:claude-3-5-sonnet';
 }
 
 async function callPerplexityWebSearch(question: string) {
@@ -539,47 +454,4 @@ async function callPerplexityWebSearch(question: string) {
     webResults,
     citations
   };
-}
-
-async function callPerplexityAPI(question: string, systemPrompt?: string) {
-  const apiKey = Deno.env.get('PERPLEXITY_API_KEY');
-  if (!apiKey) {
-    throw new Error('Perplexity API key not configured');
-  }
-
-  const response = await fetch('https://api.perplexity.ai/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'sonar-pro',
-      messages: systemPrompt ? [
-        {
-          role: 'system',
-          content: systemPrompt
-        },
-        {
-          role: 'user',
-          content: question
-        }
-      ] : [
-        {
-          role: 'user',
-          content: question
-        }
-      ],
-      temperature: 0.2
-    })
-  });
-
-  if (!response.ok) {
-    const status = response.status;
-    const errorText = await response.text();
-    console.error(`Perplexity API error: ${status} ${errorText}`);
-    throw new Error(`Perplexity API error: ${response.statusText}`);
-  }
-
-  return await response.json();
 }
