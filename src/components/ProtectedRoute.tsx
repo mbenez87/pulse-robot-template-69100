@@ -10,6 +10,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, loading } = useAuth();
 
+  // Show loading spinner while checking authentication
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -18,9 +19,11 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
+  // Redirect to auth page if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
   }
 
+  // Render protected content
   return <>{children}</>;
 };
