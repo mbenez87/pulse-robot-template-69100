@@ -19,7 +19,7 @@ export interface Document {
   ai_summary?: string;
 }
 
-export const useDocuments = (folderId?: string) => {
+export const useDocuments = (folderId?: string, category?: string) => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,11 +44,16 @@ export const useDocuments = (folderId?: string) => {
         query = query.is('parent_folder_id', null);
       }
 
+      // Add category filtering
+      if (category && category !== 'all') {
+        query = query.eq('category', category);
+      }
+
       const { data, error } = await query
         .order('is_folder', { ascending: false })
         .order('file_name', { ascending: true });
 
-      console.log('Documents query result:', { data, error, folderId, userId: user.id });
+      console.log('Documents query result:', { data, error, folderId, category, userId: user.id });
       
       if (error) throw error;
       setDocuments(data || []);
@@ -305,7 +310,7 @@ export const useDocuments = (folderId?: string) => {
         supabase.removeChannel(channel);
       };
     }
-  }, [user, folderId]);
+  }, [user, folderId, category]);
 
   return {
     documents,

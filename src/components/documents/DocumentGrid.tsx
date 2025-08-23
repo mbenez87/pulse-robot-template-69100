@@ -62,59 +62,29 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
   const [draggedDocument, setDraggedDocument] = useState<Document | null>(null);
   const [dragOverDocument, setDragOverDocument] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const { documents, loading, createFolder, deleteDocument, downloadDocument, moveDocument } = useDocuments(currentFolderId);
+  const { documents, loading, createFolder, deleteDocument, downloadDocument, moveDocument } = useDocuments(currentFolderId, selectedCategory);
   
   console.log('DocumentGrid - Raw documents:', documents);
   console.log('DocumentGrid - Current filter:', { searchQuery, selectedCategory, currentFolderId });
   const { toast } = useToast();
 
-  // Filter documents based on search and category
+  // Filter documents based on search only (category filtering is now handled in the hook)
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch = doc.file_name.toLowerCase().includes(searchQuery.toLowerCase());
     
-    let matchesCategory = true;
-    if (selectedCategory !== "all") {
-      switch (selectedCategory) {
-        case "documents":
-          matchesCategory = !doc.is_folder && (
-            doc.file_type.includes("pdf") || 
-            doc.file_type.includes("doc") || 
-            doc.file_type.includes("text") ||
-            doc.file_type.includes("sheet") || 
-            doc.file_type.includes("excel") ||
-            doc.file_type.includes("application/")
-          );
-          break;
-        case "images":
-          matchesCategory = !doc.is_folder && doc.file_type.startsWith("image/");
-          break;
-        case "videos":
-          matchesCategory = !doc.is_folder && doc.file_type.startsWith("video/");
-          break;
-        case "archives":
-          matchesCategory = !doc.is_folder && (
-            doc.file_type.includes("zip") || 
-            doc.file_type.includes("rar") || 
-            doc.file_type.includes("tar") ||
-            doc.file_type.includes("7z")
-          );
-          break;
-        case "folders":
-          matchesCategory = doc.is_folder;
-          break;
-        case "recent":
-          matchesCategory = new Date(doc.updated_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-          break;
-        case "trash":
-          // TODO: Implement trash functionality
-          matchesCategory = false;
-          break;
-        default:
-          matchesCategory = true;
-      }
+    // Handle special categories that aren't database categories
+    let matchesSpecialCategory = true;
+    if (selectedCategory === "recent") {
+      matchesSpecialCategory = new Date(doc.updated_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    } else if (selectedCategory === "starred") {
+      // TODO: Implement starred functionality
+      matchesSpecialCategory = false;
+    } else if (selectedCategory === "trash") {
+      // TODO: Implement trash functionality
+      matchesSpecialCategory = false;
     }
     
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesSpecialCategory;
   });
 
   const handleCreateFolder = async () => {

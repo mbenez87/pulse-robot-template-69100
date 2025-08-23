@@ -18,12 +18,12 @@ interface DocumentSidebarProps {
 }
 
 const categories = [
-  { id: "all", label: "All Files", icon: FolderOpen, count: 0 },
-  { id: "folders", label: "Folders", icon: Folder, count: 0 },
-  { id: "documents", label: "Documents", icon: FileText, count: 0 },
-  { id: "images", label: "Images", icon: Image, count: 0 },
-  { id: "videos", label: "Videos", icon: Video, count: 0 },
-  { id: "archives", label: "Archives", icon: Archive, count: 0 },
+  { id: "all", label: "All Files", icon: FolderOpen },
+  { id: "images", label: "Images", icon: Image },
+  { id: "videos", label: "Videos", icon: Video },
+  { id: "pdfs", label: "PDFs", icon: FileText },
+  { id: "documents", label: "Documents", icon: FileText },
+  { id: "other", label: "Other", icon: Archive },
 ];
 
 const quickAccess = [
@@ -56,7 +56,6 @@ const DocumentSidebar = ({ selectedCategory, onCategoryChange }: DocumentSidebar
                   <Icon className="h-4 w-4" />
                   <span className="font-medium">{category.label}</span>
                 </div>
-                <span className="text-sm text-muted-foreground">{category.count}</span>
               </button>
             );
           })}
@@ -84,7 +83,6 @@ const DocumentSidebar = ({ selectedCategory, onCategoryChange }: DocumentSidebar
                   <Icon className="h-4 w-4" />
                   <span className="font-medium">{item.label}</span>
                 </div>
-                <span className="text-sm text-muted-foreground">{item.count}</span>
               </button>
             );
           })}
