@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { 
   FolderOpen, 
   FileText, 
@@ -11,10 +11,17 @@ import {
   Folder
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DocumentSidebarProps {
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
+}
+
+interface CategoryCount {
+  category: string;
+  count: number;
 }
 
 const categories = [
@@ -33,6 +40,59 @@ const quickAccess = [
 ];
 
 const DocumentSidebar = ({ selectedCategory, onCategoryChange }: DocumentSidebarProps) => {
+  const { user } = useAuth();
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      if (!user) return;
+      
+      try {
+        const { data: counts, error } = await supabase.rpc('counts_by_category', { 
+          p_owner: user.id 
+        });
+        
+        if (error) throw error;
+        
+        // Convert array to object for easy lookup
+        const countsMap = counts?.reduce((acc: Record<string, number>, item: CategoryCount) => {
+          acc[item.category] = item.count;
+          return acc;
+        }, {}) || {};
+        
+        setCategoryCounts(countsMap);
+      } catch (error) {
+        console.error('Error fetching category counts:', error);
+      }
+    };
+
+    fetchCounts();
+    
+    // Set up real-time subscription for document changes
+    const channel = supabase
+      .channel('documents-counts')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'documents',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          fetchCounts(); // Refresh counts when documents change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const getCount = (categoryId: string) => {
+    return categoryCounts[categoryId] || 0;
+  };
   return (
     <div className="space-y-6">
       {/* Categories */}
@@ -56,6 +116,7 @@ const DocumentSidebar = ({ selectedCategory, onCategoryChange }: DocumentSidebar
                   <Icon className="h-4 w-4" />
                   <span className="font-medium">{category.label}</span>
                 </div>
+                <span className="text-sm text-muted-foreground">{getCount(category.id)}</span>
               </button>
             );
           })}
@@ -83,6 +144,9 @@ const DocumentSidebar = ({ selectedCategory, onCategoryChange }: DocumentSidebar
                   <Icon className="h-4 w-4" />
                   <span className="font-medium">{item.label}</span>
                 </div>
+                <span className="text-sm text-muted-foreground">
+                  {item.id === 'recent' ? getCount('all') : 0}
+                </span>
               </button>
             );
           })}

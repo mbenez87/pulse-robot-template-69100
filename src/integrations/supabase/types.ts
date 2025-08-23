@@ -1943,6 +1943,13 @@ export type Database = {
         Args: { p_contract_extraction_id: string; p_forecast_months?: number }
         Returns: undefined
       }
+      counts_by_category: {
+        Args: { p_owner: string }
+        Returns: {
+          category: string
+          count: number
+        }[]
+      }
       delete_folder_and_contents: {
         Args: { folder_id_to_delete: string }
         Returns: undefined
