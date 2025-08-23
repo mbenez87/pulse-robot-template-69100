@@ -12,96 +12,90 @@ serve(async (req) => {
   }
 
   try {
-    const { question, model, mode, org_id, room_id, doc_ids, verifier } = await req.json();
+    const { 
+      question, 
+      model, 
+      mode, 
+      docCitations = [], 
+      webResults = [], 
+      verifier = false 
+    } = await req.json();
 
     if (!question) {
       return new Response(
         JSON.stringify({ error: 'Question is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-    
-    // Only handle docs and hybrid modes in this function
-    if (mode && !['docs', 'hybrid'].includes(mode)) {
-      return new Response(
-        JSON.stringify({ error: 'This endpoint only handles docs and hybrid modes' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
-    // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    console.log('Processing answer fusion for mode:', mode);
 
-    // Generate embedding for the question
-    const questionEmbedding = await generateEmbedding(question);
-    
-    // Perform hybrid search for relevant chunks
-    const { data: searchResults, error: searchError } = await supabaseClient
-      .rpc('hybrid_search_chunks', {
-        query_text: question,
-        query_embedding: questionEmbedding,
-        org_filter: org_id || '',
-        room_filter: room_id || null,
-        doc_filter: doc_ids || null,
-        match_threshold: 0.7,
-        match_count: 10
-      });
-
-    if (searchError) {
-      console.error('Search error:', searchError);
-      throw new Error('Failed to search documents');
-    }
-
+    let systemPrompt = '';
     let citations = [];
-    let systemPrompt = "Answer strictly from provided passages; cite each claim; if insufficient information is available, say so clearly.";
-    
-    if (searchResults && searchResults.length > 0) {
-      // Build context from search results
-      const contextPassages = searchResults.map((result, index) => 
-        `[${index + 1}] ${result.text_content} (Source: ${result.doc_title || 'Unknown'}, Page: ${result.page_number || 'N/A'})`
-      ).join('\n\n');
+    let finalWebResults = [];
 
-      systemPrompt = `Answer the user's question strictly based on the provided document passages. Cite each claim with the source number [1], [2], etc. If the information is insufficient, state that clearly.
+    switch (mode) {
+      case 'docs':
+        systemPrompt = `Answer the user's question strictly based on the provided document passages. Cite each claim with the source number [1], [2], etc. If the information is insufficient, state that clearly.
 
 Document passages:
-${contextPassages}`;
+${docCitations.map((c: any, i: number) => `[${i + 1}] ${c.snippet} (Source: ${c.title}, Page: ${c.page || 'N/A'})`).join('\n\n')}`;
+        citations = docCitations;
+        break;
 
-      // Build citations array
-      citations = searchResults.map((result, index) => ({
-        id: index + 1,
-        doc_id: result.document_id,
-        title: result.doc_title || 'Unknown Document',
-        page: result.page_number || null,
-        snippet: result.text_content.substring(0, 200) + '...',
-        similarity: result.similarity
-      }));
+      case 'web':
+        systemPrompt = `Answer the user's question based on the provided web sources. Cite each claim with the URL reference [1], [2], etc.
+
+Web sources:
+${webResults.map((r: any, i: number) => `[${i + 1}] ${r.snippet} (Source: ${r.title} - ${r.url})`).join('\n\n')}`;
+        finalWebResults = webResults;
+        break;
+
+      case 'hybrid':
+        systemPrompt = `Answer the user's question using both document and web sources. Prefer document evidence when available; supplement with web sources when documents are insufficient. 
+        
+Tag citations as (Doc: [N]) for documents and (Web: [N]) for web sources.
+
+Document sources:
+${docCitations.map((c: any, i: number) => `Doc [${i + 1}] ${c.snippet} (Source: ${c.title}, Page: ${c.page || 'N/A'})`).join('\n\n')}
+
+Web sources:
+${webResults.map((r: any, i: number) => `Web [${i + 1}] ${r.snippet} (Source: ${r.title} - ${r.url})`).join('\n\n')}`;
+        citations = docCitations;
+        finalWebResults = webResults;
+        break;
+
+      default:
+        throw new Error(`Unsupported mode: ${mode}`);
     }
 
     // Get response from selected model
-    let response;
     let answer = '';
 
     switch (model) {
       case 'anthropic':
-        response = await callAnthropicAPI(question, systemPrompt);
-        answer = response.content[0]?.text || 'No response from Claude';
+        const anthResponse = await callAnthropicAPI(question, systemPrompt);
+        answer = anthResponse.content[0]?.text || 'No response from Claude';
         break;
       
       case 'openai':
-        response = await callOpenAIAPI(question, systemPrompt);
-        answer = response.choices[0]?.message?.content || 'No response from GPT';
+        const openaiResponse = await callOpenAIAPI(question, systemPrompt);
+        answer = openaiResponse.choices[0]?.message?.content || 'No response from GPT';
         break;
       
       case 'google':
-        response = await callGeminiAPI(question, systemPrompt);
-        answer = response.candidates[0]?.content?.parts[0]?.text || 'No response from Gemini';
+        const geminiResponse = await callGeminiAPI(question, systemPrompt);
+        answer = geminiResponse.candidates[0]?.content?.parts[0]?.text || 'No response from Gemini';
         break;
       
       case 'perplexity':
-        response = await callPerplexityAPI(question, systemPrompt);
-        answer = response.choices[0]?.message?.content || 'No response from Perplexity';
+        // For web mode with Perplexity, just return the Sonar answer
+        if (mode === 'web') {
+          const perplexityResponse = await callPerplexityAPI(question);
+          answer = perplexityResponse.choices[0]?.message?.content || 'No response from Perplexity';
+        } else {
+          throw new Error('Perplexity model only supports web mode');
+        }
         break;
       
       default:
@@ -111,13 +105,18 @@ ${contextPassages}`;
     let verification = null;
 
     // If verifier is enabled, run cross-model verification
-    if (verifier && citations.length > 0) {
+    if (verifier && (citations.length > 0 || finalWebResults.length > 0)) {
       const verificationModel = getAlternativeModel(model);
-      const verificationPrompt = `Validate the following answer strictly against the provided citations. Flag any unsupported claims and provide a verification summary.
+      const allSources = [
+        ...citations.map((c: any) => `Doc: ${c.snippet}`),
+        ...finalWebResults.map((r: any) => `Web: ${r.snippet}`)
+      ];
+      
+      const verificationPrompt = `Validate the following answer strictly against the provided sources. Flag any unsupported claims and provide a verification summary.
 
 Answer to verify: ${answer}
 
-Citations: ${citations.map(c => `[${c.id}] ${c.snippet}`).join('\n')}
+Sources: ${allSources.join('\n')}
 
 Respond with: SUPPORTED/UNSUPPORTED and brief notes.`;
 
@@ -142,75 +141,21 @@ Respond with: SUPPORTED/UNSUPPORTED and brief notes.`;
       JSON.stringify({ 
         answer,
         citations,
+        webResults: finalWebResults,
         verification,
-        search_results_count: searchResults?.length || 0
+        search_results_count: citations.length + finalWebResults.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in query function:', error);
+    console.error('Error in answer function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
-
-async function generateEmbedding(text: string): Promise<number[]> {
-  const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-  
-  if (openaiApiKey) {
-    try {
-      const response = await fetch('https://api.openai.com/v1/embeddings', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'text-embedding-3-large',
-          input: text
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.data[0].embedding;
-      }
-    } catch (error) {
-      console.error('OpenAI embedding failed:', error);
-    }
-  }
-
-  // Fallback to Gemini
-  const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
-  if (geminiApiKey) {
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiApiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          content: {
-            parts: [{ text: text }]
-          }
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.embedding.values;
-      }
-    } catch (error) {
-      console.error('Gemini embedding failed:', error);
-    }
-  }
-
-  // Mock embedding as final fallback
-  return new Array(1536).fill(0).map(() => Math.random() - 0.5);
-}
 
 function getAlternativeModel(currentModel: string): string {
   const alternatives = {
@@ -233,9 +178,6 @@ async function callModelAPI(model: string, question: string, systemPrompt: strin
     case 'google':
       const geminiResponse = await callGeminiAPI(question, systemPrompt);
       return geminiResponse.candidates[0]?.content?.parts[0]?.text || '';
-    case 'perplexity':
-      const perplexityResponse = await callPerplexityAPI(question, systemPrompt);
-      return perplexityResponse.choices[0]?.message?.content || '';
     default:
       throw new Error(`Unsupported model: ${model}`);
   }
@@ -280,7 +222,6 @@ async function callOpenAIAPI(question: string, systemPrompt?: string) {
     throw new Error('OpenAI API key not configured');
   }
 
-  // Try GPT-5 first, fallback to GPT-4o
   let model = 'gpt-5-2025-08-07';
   let requestBody = {
     model,
@@ -311,7 +252,6 @@ async function callOpenAIAPI(question: string, systemPrompt?: string) {
     body: JSON.stringify(requestBody)
   });
 
-  // If GPT-5 fails, fallback to GPT-4o
   if (!response.ok) {
     console.log('GPT-5 failed, falling back to GPT-4o');
     model = 'gpt-4o';
@@ -418,7 +358,10 @@ async function callPerplexityAPI(question: string, systemPrompt?: string) {
         }
       ],
       max_tokens: 2000,
-      temperature: 0.7
+      temperature: 0.2,
+      top_p: 0.9,
+      return_images: false,
+      return_related_questions: false
     })
   });
 

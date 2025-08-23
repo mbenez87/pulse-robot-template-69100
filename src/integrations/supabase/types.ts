@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           id: string
           inputs_hash: string | null
+          mode: string | null
           model_name: string
           model_provider: string
           org_id: string | null
@@ -27,6 +28,7 @@ export type Database = {
           query: string
           room_id: string | null
           source_doc_ids: string[] | null
+          sources: string[] | null
           user_id: string
         }
         Insert: {
@@ -34,6 +36,7 @@ export type Database = {
           created_at?: string
           id?: string
           inputs_hash?: string | null
+          mode?: string | null
           model_name: string
           model_provider: string
           org_id?: string | null
@@ -41,6 +44,7 @@ export type Database = {
           query: string
           room_id?: string | null
           source_doc_ids?: string[] | null
+          sources?: string[] | null
           user_id: string
         }
         Update: {
@@ -48,6 +52,7 @@ export type Database = {
           created_at?: string
           id?: string
           inputs_hash?: string | null
+          mode?: string | null
           model_name?: string
           model_provider?: string
           org_id?: string | null
@@ -55,6 +60,7 @@ export type Database = {
           query?: string
           room_id?: string | null
           source_doc_ids?: string[] | null
+          sources?: string[] | null
           user_id?: string
         }
         Relationships: []
@@ -1732,18 +1738,21 @@ export type Database = {
       }
       user_prefs: {
         Row: {
+          aria_mode: string | null
           aria_model: string
           updated_at: string
           user_id: string
           verifier_enabled: boolean | null
         }
         Insert: {
+          aria_mode?: string | null
           aria_model?: string
           updated_at?: string
           user_id: string
           verifier_enabled?: boolean | null
         }
         Update: {
+          aria_mode?: string | null
           aria_model?: string
           updated_at?: string
           user_id?: string

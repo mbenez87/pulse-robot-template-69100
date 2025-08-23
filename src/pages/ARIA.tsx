@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bot, Send, Search, Loader2, ChevronRight, X, Copy, ExternalLink, CheckCircle, AlertCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bot, Send, Search, Loader2, ChevronRight, X, Copy, ExternalLink, CheckCircle, AlertCircle, Code, Globe, FileText, Layers } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import openaiLogo from "@/assets/openai-logo.svg";
 import geminiLogo from "@/assets/gemini-logo.svg";
@@ -22,6 +23,19 @@ interface Citation {
   similarity: number;
 }
 
+interface WebResult {
+  url: string;
+  title: string;
+  snippet: string;
+}
+
+interface CodeOutput {
+  files: Array<{ path: string; content: string }>;
+  commands?: string[];
+  tests?: string;
+  output?: string;
+}
+
 interface Verification {
   model: string;
   supported: boolean | null;
@@ -34,7 +48,10 @@ interface Message {
   content: string;
   timestamp: Date;
   model?: string;
+  mode?: 'docs' | 'web' | 'hybrid' | 'code';
   citations?: Citation[];
+  webResults?: WebResult[];
+  codeOutput?: CodeOutput;
   verification?: Verification;
   search_results_count?: number;
 }
@@ -80,10 +97,18 @@ const MODEL_OPTIONS = [
   }
 ];
 
+const MODE_OPTIONS = [
+  { value: 'docs', label: 'Docs', icon: FileText, description: 'Search your documents' },
+  { value: 'web', label: 'Web', icon: Globe, description: 'Search the web' },
+  { value: 'hybrid', label: 'Hybrid', icon: Layers, description: 'Docs + Web' },
+  { value: 'code', label: 'Code', icon: Code, description: 'Generate code' }
+];
+
 export default function ARIA() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [selectedModel, setSelectedModel] = useState("openai");
+  const [selectedMode, setSelectedMode] = useState<'docs' | 'web' | 'hybrid' | 'code'>('docs');
   const [isLoading, setIsLoading] = useState(false);
   const [userPrefsLoaded, setUserPrefsLoaded] = useState(false);
   const [verifierEnabled, setVerifierEnabled] = useState(false);
@@ -129,12 +154,14 @@ export default function ARIA() {
     try {
       const { data, error } = await supabase
         .from('user_prefs')
-        .select('aria_model, verifier_enabled')
+        .select('aria_model, aria_mode, verifier_enabled')
         .eq('user_id', user!.id)
         .single();
 
       if (data && !error) {
         setSelectedModel(data.aria_model);
+        const modeValue = data.aria_mode as 'docs' | 'web' | 'hybrid' | 'code';
+        setSelectedMode(modeValue && ['docs', 'web', 'hybrid', 'code'].includes(modeValue) ? modeValue : 'docs');
         setVerifierEnabled(data.verifier_enabled || false);
       }
       setUserPrefsLoaded(true);
@@ -144,7 +171,7 @@ export default function ARIA() {
     }
   };
 
-  const saveUserPreferences = async (updates: Partial<{ aria_model: string; verifier_enabled: boolean }>) => {
+  const saveUserPreferences = async (updates: Partial<{ aria_model: string; aria_mode: string; verifier_enabled: boolean }>) => {
     if (!user) return;
 
     try {
@@ -163,13 +190,18 @@ export default function ARIA() {
     }
   };
 
-  const logQuery = async (query: string, model: string, citations: Citation[] = []) => {
+  const logQuery = async (query: string, model: string, mode: string, citations: Citation[] = [], webResults: WebResult[] = []) => {
     if (!user) return;
 
     try {
       const modelOption = MODEL_OPTIONS.find(m => m.value === model);
       const inputHash = await hashString(query);
-      const outputHash = await hashString(JSON.stringify(citations));
+      const outputHash = await hashString(JSON.stringify({ citations, webResults }));
+      
+      const sources = [];
+      if (citations.length > 0) sources.push('docs');
+      if (webResults.length > 0) sources.push('web');
+      if (mode === 'code') sources.push('code');
 
       await supabase
         .from('ai_audit_log')
@@ -178,6 +210,8 @@ export default function ARIA() {
           model_provider: model,
           model_name: modelOption?.description || model,
           query: query,
+          mode: mode,
+          sources: sources,
           inputs_hash: inputHash,
           outputs_hash: outputHash,
           citations: JSON.parse(JSON.stringify(citations)),
@@ -199,8 +233,33 @@ export default function ARIA() {
   };
 
   const handleModelChange = (model: string) => {
-    setSelectedModel(model);
-    saveUserPreferences({ aria_model: model });
+    // Auto-switch to Perplexity if Web mode is selected with non-web model
+    if (selectedMode === 'web' && model !== 'perplexity') {
+      setSelectedModel('perplexity');
+      saveUserPreferences({ aria_model: 'perplexity' });
+      toast({
+        title: "Model switched",
+        description: "Switched to Perplexity Sonar for web search mode"
+      });
+    } else {
+      setSelectedModel(model);
+      saveUserPreferences({ aria_model: model });
+    }
+  };
+
+  const handleModeChange = (mode: 'docs' | 'web' | 'hybrid' | 'code') => {
+    setSelectedMode(mode);
+    saveUserPreferences({ aria_mode: mode });
+    
+    // Auto-switch to Perplexity if Web mode is selected with non-web model
+    if (mode === 'web' && selectedModel !== 'perplexity') {
+      setSelectedModel('perplexity');
+      saveUserPreferences({ aria_model: 'perplexity' });
+      toast({
+        title: "Model switched",
+        description: "Switched to Perplexity Sonar for web search mode"
+      });
+    }
   };
 
   const handleVerifierToggle = (enabled: boolean) => {
@@ -236,16 +295,31 @@ export default function ARIA() {
     setIsLoading(true);
 
     try {
-      // Call the query edge function with context and verifier settings
-      const { data, error } = await supabase.functions.invoke('query', {
-        body: { 
-          question: queryText,
-          model: selectedModel,
-          org_id: contextFilter.org_id || user?.id || '',
-          room_id: contextFilter.room_id || null,
-          doc_ids: contextFilter.doc_ids || null,
-          verifier: verifierEnabled
-        }
+      // Route to the appropriate endpoint based on mode
+      let endpoint = 'query';
+      let requestBody: any = {
+        question: queryText,
+        model: selectedModel,
+        mode: selectedMode,
+        org_id: contextFilter.org_id || user?.id || '',
+        room_id: contextFilter.room_id || null,
+        doc_ids: contextFilter.doc_ids || null,
+        verifier: verifierEnabled
+      };
+
+      if (selectedMode === 'web') {
+        endpoint = 'web';
+        requestBody = { question: queryText };
+      } else if (selectedMode === 'code') {
+        endpoint = 'code';
+        requestBody = {
+          instruction: queryText,
+          model: selectedModel
+        };
+      }
+
+      const { data, error } = await supabase.functions.invoke(endpoint, {
+        body: requestBody
       });
 
       if (error) throw error;
@@ -253,10 +327,13 @@ export default function ARIA() {
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         type: 'assistant',
-        content: data.answer || 'No response received',
+        content: data.answer || data.content || 'No response received',
         timestamp: new Date(),
         model: MODEL_OPTIONS.find(m => m.value === selectedModel)?.label,
+        mode: selectedMode,
         citations: data.citations || [],
+        webResults: data.webResults || [],
+        codeOutput: data.codeOutput || null,
         verification: data.verification || null,
         search_results_count: data.search_results_count || 0
       };
@@ -264,7 +341,7 @@ export default function ARIA() {
       setMessages(prev => [...prev, assistantMessage]);
 
       // Log the query with results
-      await logQuery(queryText, selectedModel, data.citations || []);
+      await logQuery(queryText, selectedModel, selectedMode, data.citations || [], data.webResults || []);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -389,10 +466,33 @@ export default function ARIA() {
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyDown={handleKeyPress}
-                      placeholder="Ask anything about your documents…"
+                      placeholder={`Ask anything ${selectedMode === 'docs' ? 'about your documents' : selectedMode === 'web' ? 'about the web' : selectedMode === 'hybrid' ? 'about docs or web' : 'about code'}…`}
                       className="w-full min-h-[60px] max-h-[200px] resize-none bg-transparent border-0 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-0"
                       disabled={isLoading}
                     />
+                  </div>
+
+                  {/* Mode Selector */}
+                  <div className="flex items-center gap-1 pt-2">
+                    <div className="flex items-center bg-muted/50 rounded-lg p-1">
+                      {MODE_OPTIONS.map((mode) => {
+                        const Icon = mode.icon;
+                        return (
+                          <button
+                            key={mode.value}
+                            onClick={() => handleModeChange(mode.value as any)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                              selectedMode === mode.value
+                                ? 'bg-background text-foreground shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <Icon className="h-4 w-4" />
+                            {mode.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Model Selector & Submit */}
@@ -514,50 +614,171 @@ export default function ARIA() {
                             {message.content}
                           </div>
 
-                          {/* Citations */}
-                          {message.citations && message.citations.length > 0 && (
-                            <div className="space-y-2 mt-4 pt-4 border-t">
-                              <h4 className="text-xs font-medium text-muted-foreground">Sources</h4>
-                              <div className="space-y-2">
-                                {message.citations.map((citation) => (
-                                  <Card key={citation.id} className="p-3">
-                                    <CardContent className="p-0">
-                                      <div className="flex items-start justify-between gap-3">
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-2 mb-1">
-                                            <Badge variant="outline" className="text-xs">
-                                              [{citation.id}]
-                                            </Badge>
-                                            <span className="font-medium text-sm truncate">
-                                              {citation.title}
-                                            </span>
-                                            {citation.page && (
-                                              <span className="text-xs text-muted-foreground">
-                                                Page {citation.page}
-                                              </span>
-                                            )}
+                          {/* Results Tabs */}
+                          {(message.citations?.length > 0 || message.webResults?.length > 0 || message.codeOutput) && (
+                            <Tabs defaultValue="documents" className="mt-4">
+                              <TabsList className="grid w-full grid-cols-3">
+                                <TabsTrigger value="documents" className="gap-1">
+                                  <FileText className="h-3 w-3" />
+                                  Documents ({message.citations?.length || 0})
+                                </TabsTrigger>
+                                <TabsTrigger value="web" className="gap-1">
+                                  <Globe className="h-3 w-3" />
+                                  Web ({message.webResults?.length || 0})
+                                </TabsTrigger>
+                                <TabsTrigger value="code" className="gap-1">
+                                  <Code className="h-3 w-3" />
+                                  Code Output
+                                </TabsTrigger>
+                              </TabsList>
+                              
+                              <TabsContent value="documents" className="mt-4">
+                                {message.citations && message.citations.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {message.citations.map((citation) => (
+                                      <Card key={citation.id} className="p-3">
+                                        <CardContent className="p-0">
+                                          <div className="flex items-start justify-between gap-3">
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-center gap-2 mb-1">
+                                                <Badge variant="outline" className="text-xs">
+                                                  [{citation.id}]
+                                                </Badge>
+                                                <span className="font-medium text-sm truncate">
+                                                  {citation.title}
+                                                </span>
+                                                {citation.page && (
+                                                  <span className="text-xs text-muted-foreground">
+                                                    Page {citation.page}
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <p className="text-xs text-muted-foreground line-clamp-2">
+                                                {citation.snippet}
+                                              </p>
+                                            </div>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-8 w-8 p-0 flex-shrink-0"
+                                              onClick={() => {
+                                                window.open(`/workspace?doc=${citation.doc_id}&page=${citation.page}`, '_blank');
+                                              }}
+                                            >
+                                              <ExternalLink className="h-4 w-4" />
+                                            </Button>
                                           </div>
-                                          <p className="text-xs text-muted-foreground line-clamp-2">
-                                            {citation.snippet}
-                                          </p>
-                                        </div>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 w-8 p-0 flex-shrink-0"
-                                          onClick={() => {
-                                            // Open document in workspace at specific page
-                                            window.open(`/workspace?doc=${citation.doc_id}&page=${citation.page}`, '_blank');
-                                          }}
-                                        >
-                                          <ExternalLink className="h-4 w-4" />
-                                        </Button>
+                                        </CardContent>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground">No document sources found</p>
+                                )}
+                              </TabsContent>
+                              
+                              <TabsContent value="web" className="mt-4">
+                                {message.webResults && message.webResults.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {message.webResults.map((result, index) => (
+                                      <Card key={index} className="p-3">
+                                        <CardContent className="p-0">
+                                          <div className="flex items-start justify-between gap-3">
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-center gap-2 mb-1">
+                                                <Badge variant="outline" className="text-xs">
+                                                  [{index + 1}]
+                                                </Badge>
+                                                <span className="font-medium text-sm truncate">
+                                                  {result.title}
+                                                </span>
+                                              </div>
+                                              <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                                                {result.snippet}
+                                              </p>
+                                              <a 
+                                                href={result.url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="text-xs text-blue-600 hover:underline truncate block"
+                                              >
+                                                {result.url}
+                                              </a>
+                                            </div>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-8 w-8 p-0 flex-shrink-0"
+                                              onClick={() => window.open(result.url, '_blank')}
+                                            >
+                                              <ExternalLink className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground">No web sources found</p>
+                                )}
+                              </TabsContent>
+                              
+                              <TabsContent value="code" className="mt-4">
+                                {message.codeOutput ? (
+                                  <div className="space-y-4">
+                                    {message.codeOutput.files && message.codeOutput.files.length > 0 && (
+                                      <div className="space-y-2">
+                                        <h4 className="text-sm font-medium">Files:</h4>
+                                        {message.codeOutput.files.map((file, index) => (
+                                          <Card key={index} className="p-3">
+                                            <CardContent className="p-0">
+                                              <div className="flex items-center justify-between mb-2">
+                                                <span className="font-mono text-sm">{file.path}</span>
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  onClick={() => copyToClipboard(file.content)}
+                                                  className="h-6 px-2"
+                                                >
+                                                  <Copy className="h-3 w-3" />
+                                                </Button>
+                                              </div>
+                                              <pre className="text-xs bg-muted/50 p-3 rounded overflow-x-auto">
+                                                <code>{file.content}</code>
+                                              </pre>
+                                            </CardContent>
+                                          </Card>
+                                        ))}
                                       </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
-                              </div>
-                            </div>
+                                    )}
+                                    
+                                    {message.codeOutput.commands && (
+                                      <div>
+                                        <h4 className="text-sm font-medium mb-2">Commands:</h4>
+                                        <div className="space-y-1">
+                                          {message.codeOutput.commands.map((cmd, index) => (
+                                            <code key={index} className="block text-xs bg-muted/50 p-2 rounded font-mono">
+                                              {cmd}
+                                            </code>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {message.codeOutput.output && (
+                                      <div>
+                                        <h4 className="text-sm font-medium mb-2">Output:</h4>
+                                        <pre className="text-xs bg-muted/50 p-3 rounded overflow-x-auto">
+                                          <code>{message.codeOutput.output}</code>
+                                        </pre>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground">No code output available</p>
+                                )}
+                              </TabsContent>
+                            </Tabs>
                           )}
 
                           {/* Verification Details */}
