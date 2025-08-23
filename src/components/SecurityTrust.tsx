@@ -33,20 +33,20 @@ const SecurityTrust = () => {
   }, []);
 
   const securityFeatures = [
-    "Row-level security on every query; permissions enforced at retrieval time.",
-    "No surprise exposure: downloads disabled in answer-only shares; personalized watermarks.",
-    "Full accountability: every AI action is logged with model, inputs/outputs hash, and sources."
+    "RLS on every query; permissions enforced at retrieval time.",
+    "No surprise exposure; personalized watermarks.",
+    "Full AI audit logging (model, input/output hashes, sources)."
   ];
   
   return (
-    <section className="py-12 sm:py-16 md:py-20 relative bg-gray-50" ref={sectionRef}>
+    <section className="py-10 sm:py-12 md:py-20 px-4 sm:px-6 md:px-8 relative bg-gray-50" ref={sectionRef}>
       <div className="section-container">
         <div className="text-center mb-10 sm:mb-16">
           <h2 className="section-title mb-3 sm:mb-4 opacity-0 fade-in-element">
             Security & Trust
           </h2>
-          <p className="section-subtitle mx-auto opacity-0 fade-in-element">
-            Enterprise-grade security with complete transparency and control.
+          <p className="section-subtitle mx-auto opacity-0 fade-in-element max-w-prose text-balance">
+            Enterprise-grade security with complete transparency.
           </p>
         </div>
         

@@ -47,27 +47,27 @@ const HowItWorks = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const stepsData = [
     {
-      number: "01",
-      title: "Upload PDFs, docs, and images",
-      description: "Drag and drop your documents into Signal87's secure workspace.",
+      number: "1",
+      title: "Upload",
+      description: "Upload PDFs, docs, and images to Signal87's secure workspace.",
       image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80"
     },
     {
-      number: "02",
-      title: "Understand via OCR + embeddings",
-      description: "Content is indexed securely per org/room with advanced AI processing.",
+      number: "2",
+      title: "Understand",
+      description: "OCR + embeddings; content is indexed securely per org/room.",
       image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80"
     },
     {
-      number: "03",
+      number: "3",
       title: "Ask in ARIA",
-      description: "The router selects the right model and retrieves grounded context.",
+      description: "Router selects model; retrieval is scoped to your permissions.",
       image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80"
     },
     {
-      number: "04",
-      title: "Act with confidence",
-      description: "Redaction, obligations, forecasts, exports, and share controls at your fingertips.",
+      number: "4",
+      title: "Act",
+      description: "Redaction, obligations, forecasts, exports, and share controls.",
       image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80"
     }
   ];
@@ -108,7 +108,7 @@ const HowItWorks = () => {
   }, []);
   
   return (
-    <section className="py-20 bg-white relative" id="how-it-works" ref={sectionRef}>
+    <section className="py-10 sm:py-12 md:py-20 px-4 sm:px-6 md:px-8 bg-white relative" id="how-it-works" ref={sectionRef}>
       {/* Background decorative elements */}
       <div className="absolute -top-20 right-0 w-72 h-72 bg-pulse-50 rounded-full opacity-60 blur-3xl -z-10"></div>
       <div className="absolute bottom-0 left-10 w-64 h-64 bg-gray-50 rounded-full opacity-70 blur-3xl -z-10"></div>
@@ -119,8 +119,8 @@ const HowItWorks = () => {
             <span>Process</span>
           </div>
           <h2 className="section-title mb-4">How it works</h2>
-          <p className="section-subtitle mx-auto">
-            Four simple steps to transform your document workflow.
+          <p className="section-subtitle mx-auto max-w-prose text-balance">
+            Upload → Understand (OCR + embeddings) → Ask in ARIA (router selects model; retrieval is scoped) → Act (redaction, obligations, forecasts, share).
           </p>
         </div>
         

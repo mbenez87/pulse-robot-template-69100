@@ -11,6 +11,7 @@ import WhatMakesItUnique from "@/components/WhatMakesItUnique";
 import Newsletter from "@/components/Newsletter";
 import MadeByHumans from "@/components/MadeByHumans";
 import Footer from "@/components/Footer";
+import MobileCTA from "@/components/MobileCTA";
 
 const Index = () => {
   // Initialize intersection observer to detect when elements enter viewport
@@ -59,9 +60,9 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-[100svh] min-h-screen">
       <Navbar />
-      <main className="space-y-4 sm:space-y-8">
+      <main className="space-y-4 sm:space-y-8 pb-20 sm:pb-0">
         <Hero />
         <Features />
         <WhatYouCanDo />
@@ -73,6 +74,7 @@ const Index = () => {
         <MadeByHumans />
       </main>
       <Footer />
+      <MobileCTA />
     </div>
   );
 };

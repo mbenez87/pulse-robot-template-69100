@@ -88,7 +88,7 @@ const Features = () => {
   }, []);
   
   return (
-    <section className="py-12 sm:py-16 md:py-20 pb-0 relative bg-gray-50" id="features" ref={sectionRef}>
+    <section className="py-10 sm:py-12 md:py-20 px-4 sm:px-6 md:px-8 pb-0 relative bg-gray-50" id="features" ref={sectionRef}>
       <div className="section-container">
         <div className="text-center mb-10 sm:mb-16">
           <div className="pulse-chip mx-auto mb-3 sm:mb-4 opacity-0 fade-in-element">
@@ -97,8 +97,8 @@ const Features = () => {
           <h2 className="section-title mb-3 sm:mb-4 opacity-0 fade-in-element">
             Why Signal87
           </h2>
-          <p className="section-subtitle mx-auto opacity-0 fade-in-element">
-            Four key reasons Signal87 transforms how you work with documents.
+          <p className="section-subtitle mx-auto opacity-0 fade-in-element max-w-prose text-balance">
+            Simple UI + model power + document-aware answers.
           </p>
         </div>
         
@@ -112,19 +112,19 @@ const Features = () => {
           <FeatureCard
             icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>}
             title="Answers, not files"
-            description="Get citations and snippets; share answer-only links without exposing documents."
+            description="Citations and snippets; 'answer-only' sharing."
             index={1}
           />
           <FeatureCard
             icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 1 1-4-4"></path><path d="M12 8a4 4 0 1 0 4 4"></path><circle cx="12" cy="12" r="1"></circle></svg>}
             title="Model-smart"
-            description="Auto-routes to the best model per query (Claude / GPT-5 / Gemini / Sonar), with manual override."
+            description="Auto-routes to Claude / GPT-5 / Gemini / Sonar; manual override."
             index={2}
           />
           <FeatureCard
             icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path d="m9 12 2 2 4-4"></path></svg>}
             title="Secure by default"
-            description="Org/room scoping (RLS), redaction + watermarking, full AI audit trails."
+            description="Org/room scoping (RLS), redaction + watermarking, AI audit trails."
             index={3}
           />
         </div>

@@ -89,12 +89,15 @@ const Hero = () => {
   
   return (
     <section 
-      className="overflow-hidden relative bg-cover" 
+      className="overflow-hidden relative bg-cover min-h-[100svh] min-h-screen flex items-center" 
       id="hero" 
       style={{
         backgroundImage: 'url("/Header-background.webp")',
         backgroundPosition: 'center 30%', 
-        padding: isMobile ? '100px 12px 40px' : '120px 20px 60px'
+        paddingTop: `max(env(safe-area-inset-top, 0px), ${isMobile ? '100px' : '120px'})`,
+        paddingBottom: `max(env(safe-area-inset-bottom, 0px), ${isMobile ? '40px' : '60px'})`,
+        paddingLeft: `max(env(safe-area-inset-left, 0px), ${isMobile ? '12px' : '20px'})`,
+        paddingRight: `max(env(safe-area-inset-right, 0px), ${isMobile ? '12px' : '20px'})`
       }}
     >
       <div className="absolute -top-[10%] -right-[5%] w-1/2 h-[70%] bg-pulse-gradient opacity-20 blur-3xl rounded-full"></div>
@@ -111,15 +114,21 @@ const Hero = () => {
             </div>
             
             <h1 
-              className="section-title text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight opacity-0 animate-fade-in" 
-              style={{ animationDelay: "0.3s" }}
+              className="section-title leading-tight opacity-0 animate-fade-in text-balance" 
+              style={{ 
+                animationDelay: "0.3s",
+                fontSize: "clamp(1.75rem, 4vw, 3rem)"
+              }}
             >
               Bring your documents to life.
             </h1>
             
             <p 
-              style={{ animationDelay: "0.5s" }} 
-              className="section-subtitle mt-3 sm:mt-6 mb-4 sm:mb-8 leading-relaxed opacity-0 animate-fade-in text-gray-950 font-normal text-base sm:text-lg text-left"
+              className="section-subtitle mt-3 sm:mt-6 mb-4 sm:mb-8 leading-snug opacity-0 animate-fade-in text-gray-950 font-normal text-left max-w-prose"
+              style={{
+                animationDelay: "0.5s",
+                fontSize: "clamp(1rem, 2.5vw, 1.125rem)"
+              }}
             >
               A clean, Perplexity-style interface powered by Claude, GPT-5, Gemini, and Sonar—built to search, answer, and act on your files with citations and control.
             </p>
@@ -141,19 +150,21 @@ const Hero = () => {
                   lineHeight: '20px',
                   padding: '16px 24px',
                   border: '1px solid white',
+                  minHeight: '44px'
                 }}
               >
                 Open ARIA
                 <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
               </a>
               <a 
-                href="/documents" 
+                href="/upload" 
                 className="flex items-center justify-center group w-full sm:w-auto text-center border border-white/20 bg-white/10 backdrop-blur-sm text-gray-800 hover:bg-white/20 transition-all duration-200" 
                 style={{
                   borderRadius: '1440px',
                   padding: '16px 24px',
                   fontSize: '14px',
                   lineHeight: '20px',
+                  minHeight: '44px'
                 }}
               >
                 Upload documents

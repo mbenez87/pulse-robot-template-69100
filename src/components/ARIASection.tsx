@@ -33,20 +33,20 @@ const ARIASection = () => {
   }, []);
 
   const features = [
-    "Perplexity-style centered bar with a Model dropdown (Claude, GPT-5, Gemini, Sonar).",
-    "Citations-first answers you can trust; click to open the exact place in the source file.",
-    "Answer-only mode for external guests—insights without file access."
+    "Centered, Perplexity-style bar + Model dropdown (Claude, GPT-5, Gemini, Sonar).",
+    "Citations-first answers; click to open the exact source page.",
+    '"Answer-only mode" for guests—insights without file access.'
   ];
   
   return (
-    <section className="py-12 sm:py-16 md:py-20 relative bg-white" ref={sectionRef}>
+    <section className="py-10 sm:py-12 md:py-20 px-4 sm:px-6 md:px-8 relative bg-white" ref={sectionRef}>
       <div className="section-container">
         <div className="text-center mb-10 sm:mb-16">
           <h2 className="section-title mb-3 sm:mb-4 opacity-0 fade-in-element">
-            ARIA (the search experience)
+            ARIA (search experience)
           </h2>
-          <p className="section-subtitle mx-auto opacity-0 fade-in-element">
-            A clean, powerful interface designed for intelligent document search.
+          <p className="section-subtitle mx-auto opacity-0 fade-in-element max-w-prose text-balance">
+            The search interface that brings your documents to life.
           </p>
         </div>
         

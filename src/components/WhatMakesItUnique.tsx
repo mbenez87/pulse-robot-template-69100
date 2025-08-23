@@ -33,7 +33,7 @@ const WhatMakesItUnique = () => {
   }, []);
   
   return (
-    <section className="py-12 sm:py-16 md:py-20 relative bg-white" ref={sectionRef}>
+    <section className="py-10 sm:py-12 md:py-20 px-4 sm:px-6 md:px-8 relative bg-white" ref={sectionRef}>
       <div className="section-container">
         <div className="text-center mb-10 sm:mb-16">
           <h2 className="section-title mb-3 sm:mb-4 opacity-0 fade-in-element">
@@ -42,8 +42,8 @@ const WhatMakesItUnique = () => {
         </div>
         
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-xl text-gray-700 leading-relaxed opacity-0 fade-in-element">
-            Your documents stay put—but Signal87 adds a quasi-LLM layer: a context graph, semantic cache, and policy-aware retrieval that learns from usage and always cites its work.
+          <p className="text-gray-700 leading-relaxed opacity-0 fade-in-element max-w-prose mx-auto text-balance" style={{ fontSize: "clamp(1.125rem, 2.5vw, 1.25rem)" }}>
+            A quasi-LLM layer: context graph + semantic cache + policy-aware retrieval that always cites its work.
           </p>
         </div>
       </div>

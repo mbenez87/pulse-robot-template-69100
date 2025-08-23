@@ -33,22 +33,22 @@ const WhatYouCanDo = () => {
   }, []);
 
   const capabilities = [
-    "Ask anything across your corpus and get sourced answers with page-level citations.",
-    "Extract contract intelligence (clauses, terms, risk scoring) and track renewals/obligations automatically.",
-    "Redact sensitive content (PII/PHI/secrets) and share watermarked copies safely.",
-    "Turn documents into data with schema suggestions and structured records for analytics.",
-    "Simulate governance (retention/access) before enforcing; view privacy-preserving reviewer analytics."
+    "Ask across your corpus with page-level citations.",
+    "Extract contract intelligence & track renewals/obligations.",
+    "Redact sensitive content with per-viewer watermarks.",
+    "Turn documents into structured records for analytics.",
+    "Simulate governance; view privacy-respecting reviewer analytics."
   ];
   
   return (
-    <section className="py-12 sm:py-16 md:py-20 relative bg-white" ref={sectionRef}>
+    <section className="py-10 sm:py-12 md:py-20 px-4 sm:px-6 md:px-8 relative bg-white" ref={sectionRef}>
       <div className="section-container">
         <div className="text-center mb-10 sm:mb-16">
           <h2 className="section-title mb-3 sm:mb-4 opacity-0 fade-in-element">
             What you can do
           </h2>
-          <p className="section-subtitle mx-auto opacity-0 fade-in-element">
-            Unlock the full potential of your document workflow with intelligent automation.
+          <p className="section-subtitle mx-auto opacity-0 fade-in-element max-w-prose text-balance">
+            Powerful capabilities that transform how you work with documents.
           </p>
         </div>
         
