@@ -194,10 +194,14 @@ export const useDocuments = (folderId?: string) => {
         // Don't fail the upload if summary generation fails
       }
 
+      // Force refresh the documents list
+      console.log('Upload successful, refreshing documents list');
       await fetchDocuments();
+      
       toast({
         title: "Success",
-        description: "File uploaded successfully"
+        description: `"${file.name}" uploaded successfully`,
+        duration: 3000
       });
 
       console.log('Upload process completed successfully');
@@ -245,8 +249,35 @@ export const useDocuments = (folderId?: string) => {
     }
   };
 
+  // Effect to fetch documents and set up real-time updates
   useEffect(() => {
-    fetchDocuments();
+    if (user) {
+      fetchDocuments();
+      
+      // Set up real-time subscription for document changes
+      const channel = supabase
+        .channel('documents-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+            schema: 'public',
+            table: 'documents',
+            filter: `user_id=eq.${user.id}` // Only listen to current user's documents
+          },
+          (payload) => {
+            console.log('Real-time document change:', payload);
+            // Refresh documents when any change occurs
+            fetchDocuments();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        console.log('Cleaning up real-time subscription');
+        supabase.removeChannel(channel);
+      };
+    }
   }, [user, folderId]);
 
   return {
