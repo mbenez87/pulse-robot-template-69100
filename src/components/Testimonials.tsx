@@ -19,7 +19,7 @@ const testimonials: TestimonialProps[] = [{
   content: "The AI-powered categorization in ARIA saved us countless hours of manual organization. Our compliance team can now access any document instantly.",
   author: "Michael Rodriguez",
   role: "Director of Compliance, LegalTech",
-  gradient: "from-sky-400/60 via-blue-500/45 to-blue-700/0",
+  gradient: "from-indigo-900 via-purple-800 to-orange-500",
   backgroundImage: "/background-section2.png"
 }, {
   content: "ARIA's natural language search is phenomenal. I can ask for 'quarterly reports with declining revenue' and it finds exactly what I need. Game changer.",
@@ -31,7 +31,7 @@ const testimonials: TestimonialProps[] = [{
   content: "As a small business, we never thought enterprise-level document management would be accessible. ARIA changed everything with its intuitive design and pricing.",
   author: "Jason Lee",
   role: "CEO, Creative Studios",
-  gradient: "from-sky-400/60 via-blue-500/45 to-blue-700/0",
+  gradient: "from-orange-600 via-red-500 to-purple-600",
   backgroundImage: "/background-section1.png"
 }];
 
