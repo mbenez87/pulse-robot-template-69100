@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default function About() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto p-8 space-y-8">
+      <div className="max-w-4xl mx-auto p-8 pt-24 space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-foreground">About Signal87 AI</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
