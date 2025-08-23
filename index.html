@@ -9,6 +9,16 @@
     <meta name="author" content="Signal87 AI" />
     <meta property="og:image" content="/og-image-update.png" />
     
+    <!-- Theme initialization script - must run before paint -->
+    <script>
+      try {
+        const t = localStorage.getItem('theme');
+        const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const mode = (t === 'dark' || t === 'light') ? t : prefers;
+        if (mode === 'dark') document.documentElement.classList.add('dark');
+      } catch {}
+    </script>
+    
     <!-- Favicons and App Icons -->
     <link rel="icon" href="/brand/signal87-logo.png" type="image/png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">

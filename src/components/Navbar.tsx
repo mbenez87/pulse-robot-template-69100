@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -50,7 +51,7 @@ const Navbar = () => {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 h-14 md:h-16 transition-all duration-300 pt-[env(safe-area-inset-top)]",
         isScrolled 
-          ? "bg-white/80 backdrop-blur-md shadow-sm" 
+          ? "bg-white/80 dark:bg-black/80 backdrop-blur-md shadow-sm" 
           : "bg-transparent"
       )}
     >
@@ -89,6 +90,7 @@ const Navbar = () => {
           )}
           
           <div className="flex items-center gap-3 ml-6">
+            <ThemeToggle />
             {isAuthenticated ? (
               <Button variant="outline" onClick={handleSignOut} className="flex items-center gap-2">
                 <LogOut className="h-4 w-4" />
@@ -107,25 +109,28 @@ const Navbar = () => {
           </div>
         </nav>
 
-        {/* Mobile menu button - increased touch target */}
-        <button 
-          className="md:hidden text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md" 
-          onClick={toggleMenu}
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile controls */}
+        <div className="md:hidden flex items-center gap-2">
+          <ThemeToggle />
+          <button 
+            className="text-gray-700 dark:text-gray-300 min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md" 
+            onClick={toggleMenu}
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Navigation - improved for better touch experience */}
       <div className={cn(
-        "fixed inset-0 z-40 bg-white flex flex-col pt-16 px-6 md:hidden transition-all duration-300 ease-in-out pb-[calc(env(safe-area-inset-bottom)+12px)]",
+        "fixed inset-0 z-40 bg-white dark:bg-black flex flex-col pt-16 px-6 md:hidden transition-all duration-300 ease-in-out pb-[calc(env(safe-area-inset-bottom)+12px)]",
         isMenuOpen ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full pointer-events-none"
       )}>
         <nav className="flex flex-col space-y-6 items-center mt-8">
           <Link 
             to="/" 
-            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
+            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
             onClick={() => {
               setIsMenuOpen(false);
               document.body.style.overflow = '';
@@ -136,7 +141,7 @@ const Navbar = () => {
           </Link>
           <Link 
             to="/aria" 
-            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
+            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             onClick={() => {
               setIsMenuOpen(false);
               document.body.style.overflow = '';
@@ -146,7 +151,7 @@ const Navbar = () => {
           </Link>
           <Link 
             to="/platform" 
-            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
+            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             onClick={() => {
               setIsMenuOpen(false);
               document.body.style.overflow = '';
@@ -156,7 +161,7 @@ const Navbar = () => {
           </Link>
           <Link 
             to="/about" 
-            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
+            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             onClick={() => {
               setIsMenuOpen(false);
               document.body.style.overflow = '';
@@ -166,7 +171,7 @@ const Navbar = () => {
           </Link>
           <Link 
             to="/contact" 
-            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
+            className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             onClick={() => {
               setIsMenuOpen(false);
               document.body.style.overflow = '';
@@ -178,7 +183,7 @@ const Navbar = () => {
           {isAuthenticated && (
             <Link 
               to="/dashboard" 
-              className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
+              className="text-xl font-medium min-h-[44px] px-6 w-full text-center rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
               onClick={() => {
                 setIsMenuOpen(false);
                 document.body.style.overflow = '';
