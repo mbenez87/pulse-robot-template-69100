@@ -32,6 +32,7 @@ interface UploadFile {
   file: File;
   progress: number;
   status: "uploading" | "complete" | "error";
+  errorMessage?: string;
 }
 
 const getFileIcon = (type: string) => {
@@ -91,11 +92,13 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
   }, []);
 
   const realUpload = useCallback(async (fileId: string, file: File) => {
+    let progressInterval: NodeJS.Timeout | null = null;
+    
     try {
       console.log(`Starting upload for file: ${file.name}`);
       
       // Simulate progress updates
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setUploadFiles(prev => 
           prev.map(f => 
             f.id === fileId 
@@ -108,7 +111,10 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
       // Actual upload
       const result = await uploadDocument(file);
       
-      clearInterval(progressInterval);
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
       
       if (result) {
         console.log(`Upload successful for file: ${file.name}`);
@@ -124,17 +130,39 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
         setUploadFiles(prev => 
           prev.map(f => 
             f.id === fileId 
-              ? { ...f, status: "error" }
+              ? { ...f, status: "error", errorMessage: "Upload failed - no result returned" }
               : f
           )
         );
       }
     } catch (error) {
       console.error(`Upload error for file: ${file.name}`, error);
+      
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to upload file';
+      if (error instanceof Error) {
+        if (error.message.includes('storage')) {
+          errorMessage = 'Storage error - check file permissions';
+        } else if (error.message.includes('network')) {
+          errorMessage = 'Network error - check connection';
+        } else if (error.message.includes('size')) {
+          errorMessage = 'File too large';
+        } else if (error.message.includes('policy')) {
+          errorMessage = 'Permission denied - storage policy error';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       setUploadFiles(prev => 
         prev.map(f => 
           f.id === fileId 
-            ? { ...f, status: "error" }
+            ? { ...f, status: "error", errorMessage }
             : f
         )
       );
@@ -294,7 +322,12 @@ const UploadModal = ({ isOpen, onClose, currentFolderId }: UploadModalProps) => 
                           <CheckCircle className="h-5 w-5 text-green-500" />
                         )}
                         {uploadFile.status === "error" && (
-                          <AlertCircle className="h-5 w-5 text-red-500" />
+                          <div className="mt-2">
+                            <AlertCircle className="h-5 w-5 text-red-500 inline mr-2" />
+                            <span className="text-red-600 text-sm">
+                              {uploadFile.errorMessage || 'Upload failed'}
+                            </span>
+                          </div>
                         )}
                         <button
                           onClick={() => removeFile(uploadFile.id)}
