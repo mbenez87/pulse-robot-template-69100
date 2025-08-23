@@ -449,130 +449,137 @@ export default function ARIA() {
           )}
 
           {/* Main Search Interface */}
-          <div className="space-y-6">
-            <div className="relative">
-              <div className="bg-card/80 backdrop-blur-sm border rounded-2xl shadow-lg p-6">
-                <div className="flex items-start gap-4">
-                  
-                  {/* Search Icon */}
-                  <div className="pt-3">
-                    <Search className="h-5 w-5 text-muted-foreground" />
-                  </div>
+          <div className="bg-card/80 backdrop-blur-sm border rounded-2xl shadow-lg p-6">
+            <div className="flex flex-col gap-3 md:gap-4">
+              
+              {/* Search Input (Top) */}
+              <div className="w-full rounded-2xl border bg-white/70 backdrop-blur px-4 py-3 md:py-4 shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
+                <div className="flex items-start gap-3">
+                  <Search className="h-5 w-5 text-muted-foreground mt-1" />
+                  <textarea
+                    ref={textareaRef}
+                    value={inputValue}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
+                      // Auto-grow textarea
+                      if (textareaRef.current) {
+                        textareaRef.current.style.height = 'auto';
+                        textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 144)}px`;
+                      }
+                    }}
+                    onKeyDown={handleKeyPress}
+                    placeholder="Ask anything about your documents…"
+                    aria-label="Search documents"
+                    className="w-full resize-none overflow-hidden bg-transparent outline-none leading-relaxed text-base md:text-lg placeholder:text-muted-foreground/60"
+                    style={{ height: 'auto', minHeight: '28px' }}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
 
-                  {/* Input Area */}
-                  <div className="flex-1">
-                    <textarea
-                      ref={textareaRef}
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      onKeyDown={handleKeyPress}
-                      placeholder={`Ask anything ${selectedMode === 'docs' ? 'about your documents' : selectedMode === 'web' ? 'about the web' : selectedMode === 'hybrid' ? 'about docs or web' : 'about code'}…`}
-                      className="w-full min-h-[60px] max-h-[200px] resize-none bg-transparent border-0 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-0"
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  {/* Mode Selector */}
-                  <div className="flex items-center gap-1 pt-2">
-                    <div className="flex items-center bg-muted/50 rounded-lg p-1">
-                      {MODE_OPTIONS.map((mode) => {
-                        const Icon = mode.icon;
-                        return (
-                          <button
-                            key={mode.value}
-                            onClick={() => handleModeChange(mode.value as any)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                              selectedMode === mode.value
-                                ? 'bg-background text-foreground shadow-sm'
-                                : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                          >
-                            <Icon className="h-4 w-4" />
-                            {mode.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Model Selector & Submit */}
-                  <div className="flex items-center gap-3 pt-2">
-                     <Select value={selectedModel} onValueChange={handleModelChange}>
-                       <SelectTrigger className="w-64">
-                         <div className="flex items-center gap-2">
-                           <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-4 w-4" />
-                           <div className="flex items-center gap-2">
-                             <span>{selectedModelOption?.label}</span>
-                             <span className={`px-2 py-0.5 text-xs rounded-full ${selectedModelOption?.badgeColor}`}>
-                               {selectedModelOption?.badge}
-                             </span>
-                           </div>
-                         </div>
-                       </SelectTrigger>
-                       <SelectContent className="w-80">
-                         {MODEL_OPTIONS.map((model) => {
-                           return (
-                             <SelectItem key={model.value} value={model.value} className="py-3">
-                               <div className="flex items-center justify-between w-full">
-                                 <div className="flex items-center gap-3">
-                                   <img src={model.logo} alt={model.label} className="h-5 w-5" />
-                                   <div className="flex flex-col">
-                                     <div className="flex items-center gap-2">
-                                       <span className="font-medium">{model.label}</span>
-                                       <span className={`px-2 py-0.5 text-xs rounded-full ${model.badgeColor}`}>
-                                         {model.badge}
-                                       </span>
-                                     </div>
-                                     <span className="text-xs text-muted-foreground mt-0.5">
-                                       {model.description}
-                                     </span>
-                                   </div>
-                                 </div>
-                               </div>
-                             </SelectItem>
-                           );
-                         })}
-                       </SelectContent>
-                     </Select>
-
-                    <Button 
-                      onClick={handleSubmit} 
-                      disabled={!inputValue.trim() || isLoading}
-                      className="px-6"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Send className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
+              {/* Controls Row (Bottom) */}
+              <div className="flex flex-wrap items-center justify-between gap-2 md:gap-3">
+                
+                {/* Left Group - Mode Chips */}
+                <div className="flex flex-wrap gap-2">
+                  {MODE_OPTIONS.map((mode) => {
+                    const Icon = mode.icon;
+                    return (
+                      <button
+                        key={mode.value}
+                        onClick={() => handleModeChange(mode.value as any)}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          selectedMode === mode.value
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {mode.label}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                {/* Verifier Toggle */}
-                <div className="mt-4 flex items-center gap-3">
+                {/* Right Group - Model, Verifier, Send */}
+                <div className="flex items-center gap-2">
+                  
+                  {/* Model Selector */}
+                  <Select value={selectedModel} onValueChange={handleModelChange}>
+                    <SelectTrigger className="w-48">
+                      <div className="flex items-center gap-2">
+                        <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-4 w-4" />
+                        <div className="flex items-center gap-2">
+                          <span className="truncate">{selectedModelOption?.label}</span>
+                          <span className={`px-2 py-0.5 text-xs rounded-full ${selectedModelOption?.badgeColor}`}>
+                            {selectedModelOption?.badge}
+                          </span>
+                        </div>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="w-80">
+                      {MODEL_OPTIONS.map((model) => {
+                        return (
+                          <SelectItem key={model.value} value={model.value} className="py-3">
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-3">
+                                <img src={model.logo} alt={model.label} className="h-5 w-5" />
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">{model.label}</span>
+                                    <span className={`px-2 py-0.5 text-xs rounded-full ${model.badgeColor}`}>
+                                      {model.badge}
+                                    </span>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground mt-0.5">
+                                    {model.description}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Verifier Toggle */}
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={verifierEnabled}
                       onCheckedChange={handleVerifierToggle}
                     />
-                    <span className="text-sm text-muted-foreground">Cross-check answer</span>
+                    <span className="text-sm text-muted-foreground hidden sm:inline">Cross-check</span>
                   </div>
-                </div>
 
-                {/* Helper Text */}
-                 <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                   <div className="flex items-center gap-2">
-                     <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-3 w-3" />
-                     <span>Using {selectedModelOption?.label} ({selectedModelOption?.description})</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span>Press / to focus</span>
-                    <span>Enter to submit • Shift+Enter for new line</span>
-                  </div>
+                  {/* Send Button */}
+                  <Button 
+                    onClick={handleSubmit} 
+                    disabled={!inputValue.trim() || isLoading}
+                    className="px-4 md:px-6"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Helper Text */}
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <img src={selectedModelOption?.logo} alt={selectedModelOption?.label} className="h-3 w-3" />
+                  <span>Using {selectedModelOption?.label}</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="hidden sm:inline">Press / to focus</span>
+                  <span>Enter to submit • Shift+Enter for new line</span>
                 </div>
               </div>
             </div>
+          </div>
 
               {/* Messages Area */}
               {messages.length > 0 && (
@@ -842,7 +849,6 @@ export default function ARIA() {
                   )}
                 </div>
               )}
-          </div>
         </div>
       </div>
     </div>
