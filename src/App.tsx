@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ARIA from "./pages/ARIA";
 import Search from "./pages/Search";
+import Knowledge from "./pages/Knowledge";
 import Platform from "./pages/Platform";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AppLayout } from "./components/AppLayout";
@@ -40,6 +41,7 @@ const App = () => (
             {/* Protected Routes */}
             <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
             <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+            <Route path="/knowledge" element={<ProtectedRoute><Knowledge /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
             <Route path="/documents/:id" element={<ProtectedRoute><DocumentDetail /></ProtectedRoute>} />
             <Route path="/register" element={<ProtectedRoute><RegisterBilling /></ProtectedRoute>} />

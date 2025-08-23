@@ -12,6 +12,9 @@ export const TopMenu = () => {
       <Link to="/search" className="hover:text-primary transition-colors">
         Search
       </Link>
+      <Link to="/knowledge" className="hover:text-primary transition-colors">
+        Knowledge
+      </Link>
       <Link to="/platform" className="hover:text-primary transition-colors">
         Platform
       </Link>
