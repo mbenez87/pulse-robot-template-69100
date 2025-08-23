@@ -68,7 +68,7 @@ const MODEL_OPTIONS = [
   },
   { 
     value: 'perplexity', 
-    label: 'Sonar Perplexity Pro', 
+    label: 'Sonar Pro', 
     icon: Globe,
     description: "Perplexity's fast model",
     badge: 'real-time',
