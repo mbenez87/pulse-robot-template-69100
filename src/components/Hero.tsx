@@ -94,7 +94,7 @@ const Hero = () => {
       style={{
         backgroundImage: 'url("/Header-background.webp")',
         backgroundPosition: 'center 30%', 
-        paddingTop: `max(env(safe-area-inset-top, 0px), ${isMobile ? '80px' : '100px'})`,
+        paddingTop: `max(env(safe-area-inset-top, 0px), ${isMobile ? '60px' : '80px'})`,
         paddingBottom: `max(env(safe-area-inset-bottom, 0px), ${isMobile ? '40px' : '60px'})`,
         paddingLeft: `max(env(safe-area-inset-left, 0px), ${isMobile ? '12px' : '20px'})`,
         paddingRight: `max(env(safe-area-inset-right, 0px), ${isMobile ? '12px' : '20px'})`
