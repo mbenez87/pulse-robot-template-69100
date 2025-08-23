@@ -93,7 +93,7 @@ const Hero = () => {
       className="overflow-hidden relative bg-cover" 
       id="hero" 
       style={{
-        background: 'linear-gradient(135deg, hsl(0, 0%, 5%) 0%, hsl(0, 0%, 15%) 50%, hsl(0, 0%, 25%) 100%)',
+        background: 'linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(200, 100%, 90%) 50%, hsl(220, 100%, 80%) 100%)',
         backgroundPosition: 'center 30%', 
         padding: isMobile ? '100px 12px 40px' : '120px 20px 60px'
       }}
