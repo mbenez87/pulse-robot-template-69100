@@ -63,6 +63,9 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
   const [dragOverDocument, setDragOverDocument] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const { documents, loading, createFolder, deleteDocument, downloadDocument } = useDocuments(currentFolderId);
+  
+  console.log('DocumentGrid - Raw documents:', documents);
+  console.log('DocumentGrid - Current filter:', { searchQuery, selectedCategory, currentFolderId });
   const { toast } = useToast();
 
   // Filter documents based on search and category
@@ -134,6 +137,8 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
       return newSelection;
     });
   }, []);
+
+  console.log('DocumentGrid - Filtered documents:', filteredDocuments);
 
   const handleSelectAll = useCallback(() => {
     if (selectedDocuments.size === filteredDocuments.length) {

@@ -48,8 +48,11 @@ export const useDocuments = (folderId?: string) => {
         .order('is_folder', { ascending: false })
         .order('file_name', { ascending: true });
 
+      console.log('Documents query result:', { data, error, folderId, userId: user.id });
+      
       if (error) throw error;
       setDocuments(data || []);
+      console.log('Set documents:', data || []);
     } catch (err) {
       console.error('Error fetching documents:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
