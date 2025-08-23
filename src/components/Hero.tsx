@@ -165,12 +165,12 @@ const Hero = () => {
               <div className="relative transition-all duration-500 ease-out overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl">
                 <img 
                   ref={imageRef} 
-                  src={ariaDocumentsInterface} 
-                  alt="ARIA Document Management Platform Interface" 
+                  src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e" 
+                  alt="Advanced humanoid robot with AI capabilities" 
                   className="w-full h-auto object-cover transition-transform duration-500 ease-out" 
                   style={{ transformStyle: 'preserve-3d' }} 
                 />
-                <div className="absolute inset-0" style={{ backgroundImage: 'url("/hero-image.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', mixBlendMode: 'overlay', opacity: 0.5 }}></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-pulse-900/60 to-transparent"></div>
               </div>
               </>
             )}
