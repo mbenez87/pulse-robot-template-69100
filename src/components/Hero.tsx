@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import LottieAnimation from "./LottieAnimation";
 import ariaDocumentsInterface from "@/assets/aria-documents-interface.png";
+import crmDashboardVector from "@/assets/crm-dashboard-vector.png";
 
 const Hero = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -170,7 +171,7 @@ const Hero = () => {
                   className="w-full h-auto object-cover transition-transform duration-500 ease-out" 
                   style={{ transformStyle: 'preserve-3d' }} 
                 />
-                <div className="absolute inset-0" style={{ backgroundImage: 'url("/hero-image.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', mixBlendMode: 'overlay', opacity: 0.5 }}></div>
+                <div className="absolute inset-0" style={{ backgroundImage: `url(${crmDashboardVector})`, backgroundSize: 'cover', backgroundPosition: 'center', mixBlendMode: 'overlay', opacity: 0.7 }}></div>
               </div>
               </>
             )}
