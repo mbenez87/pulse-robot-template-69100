@@ -16,33 +16,45 @@ export type Database = {
     Tables: {
       ai_audit_log: {
         Row: {
+          citations: Json | null
           created_at: string
           id: string
+          inputs_hash: string | null
           model_name: string
           model_provider: string
           org_id: string | null
+          outputs_hash: string | null
           query: string
           room_id: string | null
+          source_doc_ids: string[] | null
           user_id: string
         }
         Insert: {
+          citations?: Json | null
           created_at?: string
           id?: string
+          inputs_hash?: string | null
           model_name: string
           model_provider: string
           org_id?: string | null
+          outputs_hash?: string | null
           query: string
           room_id?: string | null
+          source_doc_ids?: string[] | null
           user_id: string
         }
         Update: {
+          citations?: Json | null
           created_at?: string
           id?: string
+          inputs_hash?: string | null
           model_name?: string
           model_provider?: string
           org_id?: string | null
+          outputs_hash?: string | null
           query?: string
           room_id?: string | null
+          source_doc_ids?: string[] | null
           user_id?: string
         }
         Relationships: []
@@ -560,7 +572,7 @@ export type Database = {
           embedding: string | null
           id: string
           metadata: Json | null
-          org_id: string | null
+          org_id: string
           owner_id: string
           processing_method: string | null
           room_id: string | null
@@ -577,7 +589,7 @@ export type Database = {
           embedding?: string | null
           id?: string
           metadata?: Json | null
-          org_id?: string | null
+          org_id?: string
           owner_id: string
           processing_method?: string | null
           room_id?: string | null
@@ -594,7 +606,7 @@ export type Database = {
           embedding?: string | null
           id?: string
           metadata?: Json | null
-          org_id?: string | null
+          org_id?: string
           owner_id?: string
           processing_method?: string | null
           room_id?: string | null
@@ -663,7 +675,9 @@ export type Database = {
           file_type: string
           id: string
           is_folder: boolean
+          org_id: string
           parent_folder_id: string | null
+          path: string | null
           processing_status: string | null
           room_id: string | null
           share_expires_at: string | null
@@ -671,6 +685,7 @@ export type Database = {
           shared_with: string[] | null
           storage_path: string
           tags: string[] | null
+          title: string | null
           updated_at: string
           upload_status: string | null
           user_id: string
@@ -683,7 +698,9 @@ export type Database = {
           file_type: string
           id?: string
           is_folder?: boolean
+          org_id?: string
           parent_folder_id?: string | null
+          path?: string | null
           processing_status?: string | null
           room_id?: string | null
           share_expires_at?: string | null
@@ -691,6 +708,7 @@ export type Database = {
           shared_with?: string[] | null
           storage_path: string
           tags?: string[] | null
+          title?: string | null
           updated_at?: string
           upload_status?: string | null
           user_id: string
@@ -703,7 +721,9 @@ export type Database = {
           file_type?: string
           id?: string
           is_folder?: boolean
+          org_id?: string
           parent_folder_id?: string | null
+          path?: string | null
           processing_status?: string | null
           room_id?: string | null
           share_expires_at?: string | null
@@ -711,6 +731,7 @@ export type Database = {
           shared_with?: string[] | null
           storage_path?: string
           tags?: string[] | null
+          title?: string | null
           updated_at?: string
           upload_status?: string | null
           user_id?: string
@@ -1449,6 +1470,33 @@ export type Database = {
           },
         ]
       }
+      share_tokens: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          org_id: string
+          room_id: string | null
+          scope: string
+          token: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          org_id: string
+          room_id?: string | null
+          scope: string
+          token: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          org_id?: string
+          room_id?: string | null
+          scope?: string
+          token?: string
+        }
+        Relationships: []
+      }
       stripe_prices: {
         Row: {
           active: boolean | null
@@ -1687,16 +1735,19 @@ export type Database = {
           aria_model: string
           updated_at: string
           user_id: string
+          verifier_enabled: boolean | null
         }
         Insert: {
           aria_model?: string
           updated_at?: string
           user_id: string
+          verifier_enabled?: boolean | null
         }
         Update: {
           aria_model?: string
           updated_at?: string
           user_id?: string
+          verifier_enabled?: boolean | null
         }
         Relationships: []
       }
@@ -1884,6 +1935,10 @@ export type Database = {
         Args: { folder_id_to_delete: string }
         Returns: undefined
       }
+      generate_share_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_folder_contents: {
         Args: { folder_id?: string }
         Returns: {
@@ -1984,6 +2039,27 @@ export type Database = {
       hnswhandler: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      hybrid_search_chunks: {
+        Args: {
+          doc_filter?: string[]
+          match_count?: number
+          match_threshold?: number
+          org_filter: string
+          query_embedding: string
+          query_text: string
+          room_filter?: string
+        }
+        Returns: {
+          chunk_id: string
+          chunk_index: number
+          doc_path: string
+          doc_title: string
+          document_id: string
+          page_number: number
+          similarity: number
+          text_content: string
+        }[]
       }
       ivfflat_bit_support: {
         Args: { "": unknown }

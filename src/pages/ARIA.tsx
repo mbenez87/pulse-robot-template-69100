@@ -3,8 +3,26 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bot, Send, Search, Loader2, Brain, Zap, Sparkles, Globe } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Bot, Send, Search, Loader2, Brain, Zap, Sparkles, Globe, Copy, ExternalLink, CheckCircle, AlertCircle, ChevronRight, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+
+interface Citation {
+  id: number;
+  doc_id: string;
+  title: string;
+  page: number | null;
+  snippet: string;
+  similarity: number;
+}
+
+interface Verification {
+  model: string;
+  supported: boolean | null;
+  notes: string;
+}
 
 interface Message {
   id: string;
@@ -12,6 +30,15 @@ interface Message {
   content: string;
   timestamp: Date;
   model?: string;
+  citations?: Citation[];
+  verification?: Verification;
+  search_results_count?: number;
+}
+
+interface ContextFilter {
+  org_id?: string;
+  room_id?: string;
+  doc_ids?: string[];
 }
 
 const MODEL_OPTIONS = [
@@ -55,9 +82,24 @@ export default function ARIA() {
   const [selectedModel, setSelectedModel] = useState("openai");
   const [isLoading, setIsLoading] = useState(false);
   const [userPrefsLoaded, setUserPrefsLoaded] = useState(false);
+  const [verifierEnabled, setVerifierEnabled] = useState(false);
+  const [contextFilter, setContextFilter] = useState<ContextFilter>({});
+  const [availableRooms, setAvailableRooms] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Parse URL parameters for context
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const docIds = urlParams.get('doc_ids');
+    if (docIds) {
+      setContextFilter(prev => ({
+        ...prev,
+        doc_ids: docIds.split(',')
+      }));
+    }
+  }, []);
 
   // Load user preferences
   useEffect(() => {
@@ -83,12 +125,13 @@ export default function ARIA() {
     try {
       const { data, error } = await supabase
         .from('user_prefs')
-        .select('aria_model')
+        .select('aria_model, verifier_enabled')
         .eq('user_id', user!.id)
         .single();
 
       if (data && !error) {
         setSelectedModel(data.aria_model);
+        setVerifierEnabled(data.verifier_enabled || false);
       }
       setUserPrefsLoaded(true);
     } catch (error) {
@@ -97,30 +140,33 @@ export default function ARIA() {
     }
   };
 
-  const saveUserPreference = async (model: string) => {
+  const saveUserPreferences = async (updates: Partial<{ aria_model: string; verifier_enabled: boolean }>) => {
     if (!user) return;
 
     try {
       const { error } = await supabase
         .from('user_prefs')
         .upsert({ 
-          user_id: user.id, 
-          aria_model: model 
+          user_id: user.id,
+          ...updates
         }, { 
           onConflict: 'user_id' 
         });
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error saving user preference:', error);
+      console.error('Error saving user preferences:', error);
     }
   };
 
-  const logQuery = async (query: string, model: string) => {
+  const logQuery = async (query: string, model: string, citations: Citation[] = []) => {
     if (!user) return;
 
     try {
       const modelOption = MODEL_OPTIONS.find(m => m.value === model);
+      const inputHash = await hashString(query);
+      const outputHash = await hashString(JSON.stringify(citations));
+
       await supabase
         .from('ai_audit_log')
         .insert({
@@ -128,17 +174,46 @@ export default function ARIA() {
           model_provider: model,
           model_name: modelOption?.description || model,
           query: query,
-          org_id: null,
-          room_id: null
+          inputs_hash: inputHash,
+          outputs_hash: outputHash,
+          citations: JSON.parse(JSON.stringify(citations)),
+          source_doc_ids: citations.map(c => c.doc_id),
+          org_id: contextFilter.org_id || null,
+          room_id: contextFilter.room_id || null
         });
     } catch (error) {
       console.error('Error logging query:', error);
     }
   };
 
+  const hashString = async (str: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
   const handleModelChange = (model: string) => {
     setSelectedModel(model);
-    saveUserPreference(model);
+    saveUserPreferences({ aria_model: model });
+  };
+
+  const handleVerifierToggle = (enabled: boolean) => {
+    setVerifierEnabled(enabled);
+    saveUserPreferences({ verifier_enabled: enabled });
+  };
+
+  const handleContextFilterChange = (filter: Partial<ContextFilter>) => {
+    setContextFilter(prev => ({ ...prev, ...filter }));
+  };
+
+  const removeContextFilter = (key: keyof ContextFilter) => {
+    setContextFilter(prev => {
+      const newFilter = { ...prev };
+      delete newFilter[key];
+      return newFilter;
+    });
   };
 
   const handleSubmit = async () => {
@@ -157,16 +232,15 @@ export default function ARIA() {
     setIsLoading(true);
 
     try {
-      // Log the query
-      await logQuery(queryText, selectedModel);
-
-      // Call the query edge function
+      // Call the query edge function with context and verifier settings
       const { data, error } = await supabase.functions.invoke('query', {
         body: { 
           question: queryText,
           model: selectedModel,
-          org_id: user?.id || '',
-          room_id: null
+          org_id: contextFilter.org_id || user?.id || '',
+          room_id: contextFilter.room_id || null,
+          doc_ids: contextFilter.doc_ids || null,
+          verifier: verifierEnabled
         }
       });
 
@@ -177,10 +251,16 @@ export default function ARIA() {
         type: 'assistant',
         content: data.answer || 'No response received',
         timestamp: new Date(),
-        model: MODEL_OPTIONS.find(m => m.value === selectedModel)?.label
+        model: MODEL_OPTIONS.find(m => m.value === selectedModel)?.label,
+        citations: data.citations || [],
+        verification: data.verification || null,
+        search_results_count: data.search_results_count || 0
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Log the query with results
+      await logQuery(queryText, selectedModel, data.citations || []);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -203,6 +283,46 @@ export default function ARIA() {
   const selectedModelOption = MODEL_OPTIONS.find(m => m.value === selectedModel);
   const ModelIcon = selectedModelOption?.icon || Brain;
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied",
+        description: "Text copied to clipboard",
+      });
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
+  };
+
+  const handleShareAnswer = async (message: Message) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('qa-share', {
+        body: {
+          org_id: contextFilter.org_id || user?.id || '',
+          room_id: contextFilter.room_id || null,
+          expires_in_hours: 24
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Share link created",
+        description: "Answer-only share link copied to clipboard",
+      });
+
+      await copyToClipboard(data.share_url);
+    } catch (error) {
+      console.error('Failed to create share link:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create share link",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
@@ -222,6 +342,31 @@ export default function ARIA() {
               Advanced Reasoning and Information Assistant
             </p>
           </div>
+
+          {/* Context Selector */}
+          {(contextFilter.org_id || contextFilter.room_id || contextFilter.doc_ids) && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-muted-foreground">Context:</span>
+              {contextFilter.org_id && (
+                <Badge variant="secondary" className="gap-1">
+                  Org: {contextFilter.org_id.substring(0, 8)}...
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeContextFilter('org_id')} />
+                </Badge>
+              )}
+              {contextFilter.room_id && (
+                <Badge variant="secondary" className="gap-1">
+                  Room: {contextFilter.room_id}
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeContextFilter('room_id')} />
+                </Badge>
+              )}
+              {contextFilter.doc_ids && (
+                <Badge variant="secondary" className="gap-1">
+                  {contextFilter.doc_ids.length} selected files
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeContextFilter('doc_ids')} />
+                </Badge>
+              )}
+            </div>
+          )}
 
           {/* Main Search Interface */}
           <div className="space-y-6">
@@ -302,6 +447,17 @@ export default function ARIA() {
                   </div>
                 </div>
 
+                {/* Verifier Toggle */}
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={verifierEnabled}
+                      onCheckedChange={handleVerifierToggle}
+                    />
+                    <span className="text-sm text-muted-foreground">Cross-check answer</span>
+                  </div>
+                </div>
+
                 {/* Helper Text */}
                 <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
@@ -316,43 +472,153 @@ export default function ARIA() {
               </div>
             </div>
 
-            {/* Messages Area */}
-            {messages.length > 0 && (
-              <div className="space-y-6 max-w-4xl mx-auto">
-                {messages.map((message) => (
-                  <div key={message.id} className="space-y-3">
-                    <div className={`flex gap-4 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-3xl rounded-2xl p-4 ${
-                        message.type === 'user' 
-                          ? 'bg-primary text-primary-foreground ml-12' 
-                          : 'bg-card border shadow-sm mr-12'
-                      }`}>
-                        {message.type === 'assistant' && (
-                          <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-                            <ModelIcon className="h-3 w-3" />
-                            <span>{message.model}</span>
+              {/* Messages Area */}
+              {messages.length > 0 && (
+                <div className="space-y-6 max-w-4xl mx-auto">
+                  {messages.map((message) => (
+                    <div key={message.id} className="space-y-3">
+                      <div className={`flex gap-4 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-3xl rounded-2xl p-4 ${
+                          message.type === 'user' 
+                            ? 'bg-primary text-primary-foreground ml-12' 
+                            : 'bg-card border shadow-sm mr-12'
+                        }`}>
+                          {message.type === 'assistant' && (
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <ModelIcon className="h-3 w-3" />
+                                <span>{message.model}</span>
+                                {message.search_results_count !== undefined && (
+                                  <span>• {message.search_results_count} sources</span>
+                                )}
+                              </div>
+                              {message.verification && (
+                                <Badge 
+                                  variant={message.verification.supported ? "default" : "destructive"}
+                                  className="gap-1"
+                                >
+                                  {message.verification.supported ? (
+                                    <CheckCircle className="h-3 w-3" />
+                                  ) : (
+                                    <AlertCircle className="h-3 w-3" />
+                                  )}
+                                  {message.verification.supported ? 'Verified' : 'Flagged'}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                          
+                          <div className="whitespace-pre-wrap text-sm leading-relaxed mb-4">
+                            {message.content}
                           </div>
-                        )}
-                        <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                          {message.content}
+
+                          {/* Citations */}
+                          {message.citations && message.citations.length > 0 && (
+                            <div className="space-y-2 mt-4 pt-4 border-t">
+                              <h4 className="text-xs font-medium text-muted-foreground">Sources</h4>
+                              <div className="space-y-2">
+                                {message.citations.map((citation) => (
+                                  <Card key={citation.id} className="p-3">
+                                    <CardContent className="p-0">
+                                      <div className="flex items-start justify-between gap-3">
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Badge variant="outline" className="text-xs">
+                                              [{citation.id}]
+                                            </Badge>
+                                            <span className="font-medium text-sm truncate">
+                                              {citation.title}
+                                            </span>
+                                            {citation.page && (
+                                              <span className="text-xs text-muted-foreground">
+                                                Page {citation.page}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <p className="text-xs text-muted-foreground line-clamp-2">
+                                            {citation.snippet}
+                                          </p>
+                                        </div>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 w-8 p-0 flex-shrink-0"
+                                          onClick={() => {
+                                            // Open document in workspace at specific page
+                                            window.open(`/workspace?doc=${citation.doc_id}&page=${citation.page}`, '_blank');
+                                          }}
+                                        >
+                                          <ExternalLink className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Verification Details */}
+                          {message.verification && (
+                            <div className="mt-4 pt-4 border-t">
+                              <div className="flex items-start gap-2">
+                                <div className="flex items-center gap-1">
+                                  {message.verification.supported ? (
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <AlertCircle className="h-4 w-4 text-red-600" />
+                                  )}
+                                  <span className="text-xs font-medium">
+                                    Verification ({message.verification.model})
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {message.verification.notes}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Action Buttons */}
+                          {message.type === 'assistant' && (
+                            <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => copyToClipboard(message.content)}
+                                className="gap-1"
+                              >
+                                <Copy className="h-3 w-3" />
+                                Copy
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleShareAnswer(message)}
+                                className="gap-1"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                Share
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-                
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-card border shadow-sm rounded-2xl p-4 mr-12">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Thinking...</span>
+                  ))}
+                  
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-card border shadow-sm rounded-2xl p-4 mr-12">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Thinking...</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
           </div>
         </div>
       </div>
