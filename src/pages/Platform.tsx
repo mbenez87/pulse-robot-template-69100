@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, FileText, Search, Brain, Users, Shield, BarChart3 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import ScrollVectors from "@/components/ScrollVectors";
 
 interface FeatureCardProps {
@@ -101,44 +102,44 @@ const Platform = () => {
   const features = [
     {
       icon: <FileText className="w-5 h-5 sm:w-6 sm:h-6" />,
-      tag: "Document Management",
-      title: "Document storage & sharing",
-      description: "Folders, search, quick filters, and clean organization with a familiar UX."
+      tag: "File Management",
+      title: "Seamless File Management",
+      description: "Upload, organize, and secure your documents in one place with folders, search, and intuitive organization."
     },
     {
       icon: <Brain className="w-5 h-5 sm:w-6 sm:h-6" />,
-      tag: "AI Summaries",
-      title: "Mini-summaries for every document",
-      description: "Summaries are generated on upload and refresh when content changes."
+      tag: "AI-Powered",
+      title: "AI-Powered Summaries",
+      description: "Every document is instantly summarized so you get the key points at a glance without reading the full content."
     },
     {
       icon: <Search className="w-5 h-5 sm:w-6 sm:h-6" />,
-      tag: "Multi-Model",
-      title: "ARIA agent (Sonar, Claude, GPT-5, Gemini)",
-      description: "Ask questions across your library or the web with model-level controls."
+      tag: "Multi-Model AI",
+      title: "Meet ARIA",
+      description: "Your built-in multi-model AI agent connected to Sonar (Perplexity), Claude Sonnet, GPT-5, and Gemini."
     },
     {
       icon: <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />,
-      tag: "Compound Input",
-      title: "Powerful query + filters",
-      description: "Combine natural language with file type, date, tag, author, and parameters."
+      tag: "Smart Search",
+      title: "Intelligent Search",
+      description: "Combine natural language queries with filters by type, date, tag, or author for precise results."
     },
     {
       icon: <Shield className="w-5 h-5 sm:w-6 sm:h-6" />,
-      tag: "Account Isolation",
-      title: "Per-user security",
-      description: "RLS-enforced data separation; new users start with an empty workspace."
+      tag: "Security",
+      title: "Private Workspaces",
+      description: "Each account is fully isolated; new users begin with a clean workspace for complete privacy."
     },
     {
       icon: <Users className="w-5 h-5 sm:w-6 sm:h-6" />,
       tag: "Onboarding",
-      title: "3-day trial with clean redirects",
-      description: "Email confirmations route back to the app; expired trials go to Subscribe."
+      title: "Simple Onboarding",
+      description: "Start with a 3-day free trial; continue with a subscription once it expires."
     }
   ];
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen pt-16">
       <ScrollVectors />
 
       {/* Hero Section */}
@@ -151,16 +152,20 @@ const Platform = () => {
             Your Digital Workspace,<br className="hidden sm:block" /> Supercharged by AI
           </h1>
           <p className="section-subtitle mx-auto opacity-0 fade-in-element">
-            Document management with instant AI summaries and ARIA — a multi-model agent that understands your content.
+            Seamless file management with AI-powered summaries and ARIA — your built-in multi-model agent.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6 sm:mt-8 opacity-0 fade-in-element">
-            <Button className="button-primary group">
-              Start 3-Day Trial
-              <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+            <Button className="button-primary group" asChild>
+              <Link to="/auth">
+                Start 3-Day Trial
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </Button>
-            <Button variant="outline" className="button-secondary">
-              Talk to Us
+            <Button variant="outline" className="button-secondary" asChild>
+              <Link to="/contact">
+                Talk to Us
+              </Link>
             </Button>
           </div>
         </div>
@@ -249,8 +254,10 @@ const Platform = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-0 pb-0">
-            <Button className="bg-white text-pulse-600 hover:bg-gray-50 font-medium py-3 px-6 rounded-full transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]">
-              Create Account
+            <Button className="bg-white text-pulse-600 hover:bg-gray-50 font-medium py-3 px-6 rounded-full transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" asChild>
+              <Link to="/auth">
+                Create Account
+              </Link>
             </Button>
           </CardContent>
         </Card>

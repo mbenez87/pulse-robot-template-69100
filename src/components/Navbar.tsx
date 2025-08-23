@@ -70,11 +70,13 @@ const Navbar = () => {
             <Home className="h-4 w-4" />
             Home
           </Link>
-          <Link to="/documents" className="nav-link">Documents</Link>
           <Link to="/aria" className="nav-link">ARIA</Link>
           <Link to="/platform" className="nav-link">Platform</Link>
           <Link to="/about" className="nav-link">About</Link>
           <Link to="/contact" className="nav-link">Contact</Link>
+          {isAuthenticated && (
+            <Link to="/dashboard" className="nav-link">Dashboard</Link>
+          )}
           
           <div className="flex items-center gap-3 ml-6">
             {isAuthenticated ? (
@@ -88,7 +90,7 @@ const Navbar = () => {
                   <Link to="/auth">Sign In</Link>
                 </Button>
                 <Button asChild className="button-primary">
-                  <Link to="/auth">Get Started</Link>
+                  <Link to="/platform">Get Started</Link>
                 </Button>
               </>
             )}
@@ -121,16 +123,6 @@ const Navbar = () => {
           >
             <Home className="h-5 w-5" />
             Home
-          </Link>
-          <Link 
-            to="/documents" 
-            className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
-            onClick={() => {
-              setIsMenuOpen(false);
-              document.body.style.overflow = '';
-            }}
-          >
-            Documents
           </Link>
           <Link 
             to="/aria" 
@@ -172,6 +164,19 @@ const Navbar = () => {
           >
             Contact
           </Link>
+          
+          {isAuthenticated && (
+            <Link 
+              to="/dashboard" 
+              className="text-xl font-medium py-3 px-6 w-full text-center rounded-lg hover:bg-gray-100" 
+              onClick={() => {
+                setIsMenuOpen(false);
+                document.body.style.overflow = '';
+              }}
+            >
+              Dashboard
+            </Link>
+          )}
           
           <div className="flex flex-col gap-3 w-full mt-8">
             {isAuthenticated ? (
