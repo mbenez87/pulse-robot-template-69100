@@ -14,6 +14,16 @@ type Doc = {
   updated_at: string;
   storage_path: string;
   title?: string; // will map from file_name
+  // Media metadata fields
+  width?: number;
+  height?: number;
+  duration_seconds?: number;
+  capture_at?: string;
+  camera_make?: string;
+  camera_model?: string;
+  gps_lat?: number;
+  gps_lon?: number;
+  meta?: any;
 };
 
 export default function DocumentModal({
@@ -72,6 +82,17 @@ export default function DocumentModal({
     } finally {
       setSaving(false);
     }
+  }
+
+  function formatDuration(seconds: number) {
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    
+    if (hours > 0) {
+      return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
   function prettySize(bytes?: number | null) {
@@ -163,10 +184,24 @@ export default function DocumentModal({
             <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
               <Detail label="Type" value={doc?.file_type || "—"} />
               <Detail label="Size" value={prettySize(doc?.file_size)} />
-              <Detail label="Pages" value="—" />
+              {doc?.width && doc?.height && (
+                <Detail label="Dimensions" value={`${doc.width} × ${doc.height}`} />
+              )}
+              {doc?.duration_seconds && (
+                <Detail label="Duration" value={formatDuration(doc.duration_seconds)} />
+              )}
               <Detail label="Folder" value={doc?.parent_folder_id ? "In folder" : "All Files"} />
               <Detail label="Created" value={doc ? new Date(doc.created_at).toLocaleString() : "—"} />
               <Detail label="Modified" value={doc ? new Date(doc.updated_at).toLocaleString() : "—"} />
+              {doc?.capture_at && (
+                <Detail label="Captured" value={new Date(doc.capture_at).toLocaleString()} />
+              )}
+              {doc?.camera_make && (
+                <Detail label="Camera" value={`${doc.camera_make} ${doc.camera_model || ''}`.trim()} />
+              )}
+              {doc?.gps_lat && doc?.gps_lon && (
+                <Detail label="Location" value={`${doc.gps_lat.toFixed(6)}, ${doc.gps_lon.toFixed(6)}`} />
+              )}
             </div>
 
             <div className="mt-5 flex gap-2">

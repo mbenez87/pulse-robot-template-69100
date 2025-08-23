@@ -25,6 +25,16 @@ interface Document {
   file_size: number;
   storage_path: string;
   ai_summary?: string;
+  // Media metadata
+  width?: number;
+  height?: number;
+  duration_seconds?: number;
+  capture_at?: string;
+  camera_make?: string;
+  camera_model?: string;
+  gps_lat?: number;
+  gps_lon?: number;
+  meta?: any;
 }
 
 export default function Viewer() {

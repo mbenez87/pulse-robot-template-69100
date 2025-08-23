@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import { extractFileMetadata } from '@/lib/metadataExtractor';
 
 export interface Document {
   id: string;
@@ -17,6 +18,16 @@ export interface Document {
   shared_with?: string[];
   share_link?: string;
   ai_summary?: string;
+  // Media metadata fields
+  width?: number;
+  height?: number;
+  duration_seconds?: number;
+  capture_at?: string;
+  camera_make?: string;
+  camera_model?: string;
+  gps_lat?: number;
+  gps_lon?: number;
+  meta?: any;
 }
 
 export const useDocuments = (folderId?: string, category?: string) => {
@@ -164,7 +175,12 @@ export const useDocuments = (folderId?: string, category?: string) => {
 
       console.log('File uploaded to storage successfully');
 
-      // Save document metadata
+      // Extract metadata for media files
+      console.log('Extracting file metadata...');
+      const metadata = await extractFileMetadata(file);
+      console.log('Extracted metadata:', metadata);
+
+      // Save document metadata with extracted media metadata
       const documentData = {
         user_id: user.id,
         file_name: file.name,
@@ -173,6 +189,7 @@ export const useDocuments = (folderId?: string, category?: string) => {
         storage_path: filePath,
         is_folder: false,
         parent_folder_id: folderId || null,
+        ...metadata, // Spread the extracted metadata
       };
 
       console.log('Saving document metadata:', documentData);
