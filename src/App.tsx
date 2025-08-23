@@ -14,6 +14,7 @@ import Team from "./pages/Team";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ARIA from "./pages/ARIA";
+import Search from "./pages/Search";
 import Platform from "./pages/Platform";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AppLayout } from "./components/AppLayout";
@@ -37,6 +38,8 @@ const App = () => (
             <Route path="/aria" element={<ARIA />} />
             
             {/* Protected Routes */}
+            <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
+            <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
             <Route path="/documents/:id" element={<ProtectedRoute><DocumentDetail /></ProtectedRoute>} />
             <Route path="/register" element={<ProtectedRoute><RegisterBilling /></ProtectedRoute>} />
