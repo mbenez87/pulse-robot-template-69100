@@ -130,26 +130,30 @@ const ContractAnalysisView = ({ contractId }: ContractAnalysisViewProps) => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } else {
-      // Generate summary export
+      // Generate summary export with safe property access
+      const parties = contract.parties as any || {};
+      const termDetails = contract.term_details as any || {};
+      const pricing = contract.pricing as any || {};
+      
       const summary = `
 Contract Analysis Summary
 Generated: ${new Date().toLocaleDateString()}
 File: ${contract.documents.file_name}
 
 PARTIES:
-Primary Party: ${contract.parties.primary_party}
-Counterparty: ${contract.parties.counterparty}
-Other Parties: ${contract.parties.other_parties?.join(', ') || 'None'}
+Primary Party: ${parties.primary_party || 'Not specified'}
+Counterparty: ${parties.counterparty || 'Not specified'}
+Other Parties: ${parties.other_parties?.join(', ') || 'None'}
 
 TERM DETAILS:
-Start Date: ${contract.term_details.start_date || 'Not specified'}
-End Date: ${contract.term_details.end_date || 'Not specified'}
-Term Length: ${contract.term_details.term_length || 'Not specified'}
-Auto Renewal: ${contract.term_details.auto_renewal ? 'Yes' : 'No'}
+Start Date: ${termDetails.start_date || 'Not specified'}
+End Date: ${termDetails.end_date || 'Not specified'}
+Term Length: ${termDetails.term_length || 'Not specified'}
+Auto Renewal: ${termDetails.auto_renewal ? 'Yes' : 'No'}
 
 PRICING:
-Amount: ${contract.pricing.currency || '$'}${contract.pricing.amount || 'Not specified'}
-Payment Terms: ${contract.pricing.payment_terms || 'Not specified'}
+Amount: ${pricing.currency || '$'}${pricing.amount || 'Not specified'}
+Payment Terms: ${pricing.payment_terms || 'Not specified'}
 
 RISK ASSESSMENT:
 Risk Score: ${contract.risk_score}/100
@@ -219,6 +223,17 @@ CONFIDENCE: ${(contract.extraction_confidence * 100).toFixed(1)}%
     );
   }
 
+  // Safe property access
+  const parties = contract.parties as any || {};
+  const termDetails = contract.term_details as any || {};
+  const pricing = contract.pricing as any || {};
+  const renewalTerms = contract.renewal_terms as any || {};
+  const terminationClauses = contract.termination_clauses as any || {};
+  const ipProvisions = contract.ip_provisions as any || {};
+  const governingLaw = contract.governing_law as any || {};
+  const liabilityCap = contract.liability_cap as any || {};
+  const indemnityClause = contract.indemnity_clauses as any || {};
+
   return (
     <div className="space-y-6">
       {/* Header with file info and actions */}
@@ -280,10 +295,10 @@ CONFIDENCE: ${(contract.extraction_confidence * 100).toFixed(1)}%
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(contract.pricing as any)?.currency || '$'}{(contract.pricing as any)?.amount || 'N/A'}
+              {pricing.currency || '$'}{pricing.amount || 'N/A'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {(contract.pricing as any)?.payment_terms || 'Terms not specified'}
+              {pricing.payment_terms || 'Terms not specified'}
             </p>
           </CardContent>
         </Card>
@@ -295,10 +310,10 @@ CONFIDENCE: ${(contract.extraction_confidence * 100).toFixed(1)}%
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {contract.term_details.term_length || 'Not specified'}
+              {termDetails.term_length || 'Not specified'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {contract.term_details.auto_renewal ? 'Auto-renewing' : 'Fixed term'}
+              {termDetails.auto_renewal ? 'Auto-renewing' : 'Fixed term'}
             </p>
           </CardContent>
         </Card>
@@ -338,20 +353,20 @@ CONFIDENCE: ${(contract.extraction_confidence * 100).toFixed(1)}%
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-medium">Primary Party</h4>
-                  <p className="text-muted-foreground">{contract.parties.primary_party}</p>
+                  <p className="text-muted-foreground">{parties.primary_party || 'Not specified'}</p>
                 </div>
                 <Separator />
                 <div>
                   <h4 className="font-medium">Counterparty</h4>
-                  <p className="text-muted-foreground">{contract.parties.counterparty}</p>
+                  <p className="text-muted-foreground">{parties.counterparty || 'Not specified'}</p>
                 </div>
-                {contract.parties.other_parties && contract.parties.other_parties.length > 0 && (
+                {parties.other_parties && Array.isArray(parties.other_parties) && parties.other_parties.length > 0 && (
                   <>
                     <Separator />
                     <div>
                       <h4 className="font-medium">Other Parties</h4>
                       <ul className="text-muted-foreground space-y-1">
-                        {contract.parties.other_parties.map((party, index) => (
+                        {parties.other_parties.map((party: string, index: number) => (
                           <li key={index}>• {party}</li>
                         ))}
                       </ul>
@@ -373,13 +388,13 @@ CONFIDENCE: ${(contract.extraction_confidence * 100).toFixed(1)}%
                   <div>
                     <h4 className="font-medium">Start Date</h4>
                     <p className="text-muted-foreground">
-                      {contract.term_details.start_date || 'Not specified'}
+                      {termDetails.start_date || 'Not specified'}
                     </p>
                   </div>
                   <div>
                     <h4 className="font-medium">End Date</h4>
                     <p className="text-muted-foreground">
-                      {contract.term_details.end_date || 'Not specified'}
+                      {termDetails.end_date || 'Not specified'}
                     </p>
                   </div>
                 </div>
@@ -387,13 +402,13 @@ CONFIDENCE: ${(contract.extraction_confidence * 100).toFixed(1)}%
                 <div>
                   <h4 className="font-medium">Term Length</h4>
                   <p className="text-muted-foreground">
-                    {contract.term_details.term_length || 'Not specified'}
+                    {termDetails.term_length || 'Not specified'}
                   </p>
                 </div>
                 <div>
                   <h4 className="font-medium">Auto Renewal</h4>
-                  <Badge variant={contract.term_details.auto_renewal ? "default" : "secondary"}>
-                    {contract.term_details.auto_renewal ? 'Yes' : 'No'}
+                  <Badge variant={termDetails.auto_renewal ? "default" : "secondary"}>
+                    {termDetails.auto_renewal ? 'Yes' : 'No'}
                   </Badge>
                 </div>
               </CardContent>
@@ -414,22 +429,22 @@ CONFIDENCE: ${(contract.extraction_confidence * 100).toFixed(1)}%
                 <div>
                   <h4 className="font-medium">Contract Value</h4>
                   <p className="text-muted-foreground">
-                    {contract.pricing.currency || '$'}{contract.pricing.amount || 'Not specified'}
+                    {pricing.currency || '$'}{pricing.amount || 'Not specified'}
                   </p>
                 </div>
                 <Separator />
                 <div>
                   <h4 className="font-medium">Payment Terms</h4>
                   <p className="text-muted-foreground">
-                    {contract.pricing.payment_terms || 'Not specified'}
+                    {pricing.payment_terms || 'Not specified'}
                   </p>
                 </div>
-                {contract.pricing.escalations && (
+                {pricing.escalations && (
                   <>
                     <Separator />
                     <div>
                       <h4 className="font-medium">Escalations</h4>
-                      <p className="text-muted-foreground">{contract.pricing.escalations}</p>
+                      <p className="text-muted-foreground">{pricing.escalations}</p>
                     </div>
                   </>
                 )}
@@ -441,31 +456,31 @@ CONFIDENCE: ${(contract.extraction_confidence * 100).toFixed(1)}%
                 <CardTitle>Renewal & Termination</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {contract.renewal_terms && (
+                {renewalTerms && Object.keys(renewalTerms).length > 0 && (
                   <div>
                     <h4 className="font-medium">Renewal Terms</h4>
                     <p className="text-muted-foreground">
-                      Notice Period: {contract.renewal_terms.notice_period || 'Not specified'}
+                      Notice Period: {renewalTerms.notice_period || 'Not specified'}
                     </p>
-                    {contract.renewal_terms.renewal_conditions && (
+                    {renewalTerms.renewal_conditions && (
                       <p className="text-muted-foreground mt-2">
-                        Conditions: {contract.renewal_terms.renewal_conditions}
+                        Conditions: {renewalTerms.renewal_conditions}
                       </p>
                     )}
                   </div>
                 )}
                 
-                {contract.termination_clauses && (
+                {terminationClauses && Object.keys(terminationClauses).length > 0 && (
                   <>
                     <Separator />
                     <div>
                       <h4 className="font-medium">Termination Rights</h4>
                       <p className="text-muted-foreground">
-                        {contract.termination_clauses.termination_rights || 'Not specified'}
+                        {terminationClauses.termination_rights || 'Not specified'}
                       </p>
-                      {contract.termination_clauses.notice_periods && (
+                      {terminationClauses.notice_periods && (
                         <p className="text-muted-foreground mt-2">
-                          Notice: {contract.termination_clauses.notice_periods}
+                          Notice: {terminationClauses.notice_periods}
                         </p>
                       )}
                     </div>
@@ -481,46 +496,39 @@ CONFIDENCE: ${(contract.extraction_confidence * 100).toFixed(1)}%
             <CardHeader>
               <CardTitle className="flex items-center">
                 <AlertTriangle className="mr-2 h-5 w-5" />
-                Risk Assessment
+                Risk Analysis
               </CardTitle>
-              <CardDescription>
-                AI-generated risk analysis based on contract terms and provisions
-              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="text-3xl font-bold">{contract.risk_score}</div>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div>
-                  <Badge variant={getRiskBadgeColor(contract.risk_score)} className="text-lg">
+                  <h3 className="text-lg font-semibold">Overall Risk Score</h3>
+                  <p className="text-muted-foreground">{contract.risk_rationale}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold">{contract.risk_score}</div>
+                  <Badge variant={getRiskBadgeColor(contract.risk_score)} className="mt-2">
                     {getRiskLevel(contract.risk_score)} Risk
                   </Badge>
                 </div>
               </div>
-              <Separator />
-              <div>
-                <h4 className="font-medium mb-2">Risk Rationale</h4>
-                <p className="text-muted-foreground leading-relaxed">
-                  {contract.risk_rationale}
-                </p>
-              </div>
-              
-              {contract.unusual_clauses && (
-                <>
-                  <Separator />
-                  <div>
-                    <h4 className="font-medium mb-2">Unusual Clauses</h4>
-                    <div className="space-y-2">
-                      <p className="text-muted-foreground">
-                        {contract.unusual_clauses.description || 'None identified'}
-                      </p>
-                      {contract.unusual_clauses.risk_level && (
-                        <Badge variant="outline">
-                          Risk Level: {contract.unusual_clauses.risk_level}
-                        </Badge>
-                      )}
-                    </div>
+
+              {contract.unusual_clauses && Array.isArray(contract.unusual_clauses) && contract.unusual_clauses.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-3">Unusual Clauses</h4>
+                  <div className="space-y-3">
+                    {contract.unusual_clauses.map((clause: any, index: number) => (
+                      <div key={index} className="p-3 border rounded-lg">
+                        <p className="font-medium">{clause.description || 'Unusual clause detected'}</p>
+                        {clause.risk_level && (
+                          <Badge variant={clause.risk_level === 'high' ? "destructive" : "outline"} className="mt-2">
+                            {clause.risk_level} risk
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                </>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -536,66 +544,52 @@ CONFIDENCE: ${(contract.extraction_confidence * 100).toFixed(1)}%
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {contract.governing_law ? (
-                  <>
-                    <div>
-                      <h4 className="font-medium">Jurisdiction</h4>
-                      <p className="text-muted-foreground">
-                        {contract.governing_law.jurisdiction || 'Not specified'}
-                      </p>
-                    </div>
-                    <Separator />
-                    <div>
-                      <h4 className="font-medium">Dispute Resolution</h4>
-                      <p className="text-muted-foreground">
-                        {contract.governing_law.dispute_resolution || 'Not specified'}
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Venue</h4>
-                      <p className="text-muted-foreground">
-                        {contract.governing_law.venue || 'Not specified'}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-muted-foreground">No governing law information extracted</p>
-                )}
+                <div>
+                  <h4 className="font-medium">Jurisdiction</h4>
+                  <p className="text-muted-foreground">
+                    {governingLaw.jurisdiction || 'Not specified'}
+                  </p>
+                </div>
+                <Separator />
+                <div>
+                  <h4 className="font-medium">Dispute Resolution</h4>
+                  <p className="text-muted-foreground">
+                    {governingLaw.dispute_resolution || 'Not specified'}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium">Venue</h4>
+                  <p className="text-muted-foreground">
+                    {governingLaw.venue || 'Not specified'}
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Shield className="mr-2 h-5 w-5" />
-                  Liability & Indemnity
-                </CardTitle>
+                <CardTitle>Liability & Indemnity</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {contract.liability_cap && (
+                {liabilityCap && Object.keys(liabilityCap).length > 0 && (
                   <div>
                     <h4 className="font-medium">Liability Cap</h4>
                     <p className="text-muted-foreground">
-                      {contract.liability_cap.cap_amount 
-                        ? `${contract.pricing.currency || '$'}${contract.liability_cap.cap_amount}`
-                        : 'Not specified'
-                      }
+                      {liabilityCap.currency || '$'}{liabilityCap.cap_amount || 'Not specified'}
                     </p>
-                    {contract.liability_cap.mutual_caps && (
-                      <Badge variant="outline" className="mt-2">
-                        Mutual Caps Apply
-                      </Badge>
-                    )}
+                    <p className="text-sm text-muted-foreground">
+                      Mutual caps: {liabilityCap.mutual_caps ? 'Yes' : 'No'}
+                    </p>
                   </div>
                 )}
                 
-                {contract.indemnity_clauses && (
+                {indemnityClause && Object.keys(indemnityClause).length > 0 && (
                   <>
                     <Separator />
                     <div>
-                      <h4 className="font-medium">Indemnity Scope</h4>
+                      <h4 className="font-medium">Indemnification</h4>
                       <p className="text-muted-foreground">
-                        {contract.indemnity_clauses.scope || 'Not specified'}
+                        {indemnityClause.scope || 'Standard indemnification clauses apply'}
                       </p>
                     </div>
                   </>

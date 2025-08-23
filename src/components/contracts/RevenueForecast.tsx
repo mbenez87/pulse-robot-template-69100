@@ -154,16 +154,16 @@ const RevenueForecast = () => {
   });
 
   // Calculate totals
-  const totalProjectedRevenue = forecasts?.reduce((sum, f) => sum + parseFloat(f.projected_revenue), 0) || 0;
+  const totalProjectedRevenue = forecasts?.reduce((sum, f) => sum + parseFloat(f.projected_revenue.toString()), 0) || 0;
   const avgMonthlyRevenue = forecasts?.length ? totalProjectedRevenue / forecasts.length : 0;
-  const annualRecurringRevenue = forecasts?.[0]?.arr || 0;
+  const annualRecurringRevenue = parseFloat(forecasts?.[0]?.arr?.toString() || '0');
 
   // Prepare chart data
   const chartData = forecasts?.map(f => ({
     month: new Date(f.forecast_month).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-    revenue: parseFloat(f.projected_revenue),
-    arr: parseFloat(f.arr || '0'),
-    variance: parseFloat(f.variance_from_previous || '0')
+    revenue: parseFloat(f.projected_revenue.toString()),
+    arr: parseFloat(f.arr?.toString() || '0'),
+    variance: parseFloat(f.variance_from_previous?.toString() || '0')
   })) || [];
 
   return (
@@ -436,24 +436,24 @@ const RevenueForecast = () => {
                               year: 'numeric' 
                             })}
                           </TableCell>
-                          <TableCell className="font-medium">
-                            ${parseFloat(forecast.projected_revenue).toLocaleString()}
+                           <TableCell className="font-medium">
+                            ${parseFloat(forecast.projected_revenue.toString()).toLocaleString()}
                           </TableCell>
                           <TableCell>
-                            ${parseFloat(forecast.arr || '0').toLocaleString()}
+                            ${parseFloat(forecast.arr?.toString() || '0').toLocaleString()}
                           </TableCell>
                           <TableCell>
-                            ${parseFloat(forecast.acv || '0').toLocaleString()}
+                            ${parseFloat(forecast.acv?.toString() || '0').toLocaleString()}
                           </TableCell>
                           <TableCell>
                             {forecast.variance_from_previous && (
                               <span className={
-                                parseFloat(forecast.variance_from_previous) >= 0 
+                                parseFloat(forecast.variance_from_previous.toString()) >= 0 
                                   ? 'text-green-600' 
                                   : 'text-red-600'
                               }>
-                                {parseFloat(forecast.variance_from_previous) >= 0 ? '+' : ''}
-                                ${parseFloat(forecast.variance_from_previous).toLocaleString()}
+                                {parseFloat(forecast.variance_from_previous.toString()) >= 0 ? '+' : ''}
+                                ${parseFloat(forecast.variance_from_previous.toString()).toLocaleString()}
                                 {forecast.variance_percentage && (
                                   <span className="text-muted-foreground">
                                     {' '}({parseFloat(forecast.variance_percentage).toFixed(1)}%)

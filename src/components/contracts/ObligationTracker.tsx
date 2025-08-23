@@ -327,7 +327,7 @@ const ObligationTracker = () => {
                                 {obligation.contract_extractions.documents.file_name}
                               </p>
                               <p className="text-sm text-muted-foreground">
-                                {obligation.contract_extractions.parties.primary_party}
+                                {(obligation.contract_extractions.parties as any)?.primary_party || 'Not specified'}
                               </p>
                             </div>
                           </TableCell>
