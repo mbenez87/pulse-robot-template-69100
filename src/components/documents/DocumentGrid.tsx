@@ -4,6 +4,7 @@ import { Document, useDocuments } from '@/hooks/useDocuments';
 import { useMultiSelection } from '@/hooks/useMultiSelection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -62,7 +63,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
   const [draggedDocument, setDraggedDocument] = useState<Document | null>(null);
   const [dragOverDocument, setDragOverDocument] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const { documents, loading, createFolder, deleteDocument, downloadDocument, moveDocument } = useDocuments(currentFolderId, selectedCategory);
+  const { documents, loading, createFolder, deleteDocument, downloadDocument, moveDocument, fetchDocuments } = useDocuments(currentFolderId, selectedCategory);
   
   console.log('DocumentGrid - Raw documents:', documents);
   console.log('DocumentGrid - Current filter:', { searchQuery, selectedCategory, currentFolderId });
@@ -159,15 +160,23 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
   }, [selectedIds]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    // Only allow drop if dragging document IDs
+    if (e.dataTransfer.types.includes("application/x-doc-ids")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
   }, []);
 
   const handleDragEnter = useCallback((e: React.DragEvent, targetDocument: Document) => {
     e.preventDefault();
-    if (targetDocument.is_folder) {
-      const draggedIds = JSON.parse(e.dataTransfer.getData("application/x-doc-ids") || "[]");
-      if (!draggedIds.includes(targetDocument.id)) {
+    if (targetDocument.is_folder && e.dataTransfer.types.includes("application/x-doc-ids")) {
+      try {
+        const draggedIds = JSON.parse(e.dataTransfer.getData("application/x-doc-ids") || "[]");
+        if (!draggedIds.includes(targetDocument.id)) {
+          setDragOverDocument(targetDocument.id);
+        }
+      } catch {
+        // If we can't parse the data, still allow drag over for folders
         setDragOverDocument(targetDocument.id);
       }
     }
@@ -182,28 +191,45 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
     e.preventDefault();
     setDragOverDocument(null);
     
+    const data = e.dataTransfer.getData("application/x-doc-ids");
+    if (!data) return;
+    
     try {
-      const draggedIds = JSON.parse(e.dataTransfer.getData("application/x-doc-ids"));
+      const draggedIds: string[] = JSON.parse(data);
       
       if (targetDocument.is_folder && Array.isArray(draggedIds)) {
-        // Move all dragged documents to the target folder
-        for (const draggedId of draggedIds) {
-          if (draggedId !== targetDocument.id) {
-            await moveDocument(draggedId, targetDocument.id);
-          }
-        }
+        // Filter out the target folder itself to prevent moving folder into itself
+        const validIds = draggedIds.filter(id => id !== targetDocument.id);
         
-        toast({
-          title: "Success",
-          description: `Moved ${draggedIds.length} item${draggedIds.length > 1 ? 's' : ''} to "${targetDocument.file_name}"`
-        });
+        if (validIds.length > 0) {
+          // Bulk move using Supabase update with .in()
+          const { error } = await supabase
+            .from('documents')
+            .update({ parent_folder_id: targetDocument.id })
+            .in('id', validIds);
+          
+          if (error) throw error;
+          
+          // Refresh the documents list
+          await fetchDocuments();
+          
+          toast({
+            title: "Success",
+            description: `Moved ${validIds.length} item${validIds.length > 1 ? 's' : ''} to "${targetDocument.file_name}"`
+          });
+        }
       }
     } catch (error) {
-      console.error('Error parsing drag data:', error);
+      console.error('Error during drop operation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to move items",
+        variant: "destructive"
+      });
     }
     
     setDraggedDocument(null);
-  }, [moveDocument, toast]);
+  }, [supabase, fetchDocuments, toast]);
 
   const handleOpenDocument = useCallback((document: Document) => {
     if (document.is_folder) {
