@@ -2,11 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Document, Page } from "react-pdf";
+import { createVersion } from "@/lib/versions";
+import { logActivity } from "@/lib/audit";
 
 type DocMeta = {
   id: string; title: string; mime_type: string | null; storage_path?: string;
   size_bytes?: number | null; created_at: string; updated_at: string;
   width?: number | null; height?: number | null; duration_seconds?: number | null;
+  owner_id: string;
 };
 
 export default function DocumentViewer() {
@@ -20,6 +23,77 @@ export default function DocumentViewer() {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);  // for pan
 
+  async function onReplace(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]; 
+    if (!f || !meta) return;
+    
+    try {
+      // 1) Upload new binary to storage
+      const newPath = `${meta.owner_id}/${crypto.randomUUID()}-${f.name}`;
+      const up = await supabase.storage.from("docs").upload(newPath, f);
+      if (up.error) throw up.error;
+
+      // 2) Update document with new storage path + base metadata
+      const base = {
+        file_name: f.name,
+        storage_path: newPath,
+        file_type: f.type || null,
+        file_size: f.size
+      };
+
+      // 3) Optional: extract basic client metadata (image/video) before saving
+      let enrich: any = {};
+      if (f.type.startsWith("image/")) {
+        const dims = await new Promise<{w:number;h:number}>(res => {
+          const img = new Image(); 
+          img.onload = () => res({ w: img.naturalWidth, h: img.naturalHeight });
+          img.src = URL.createObjectURL(f);
+        });
+        enrich = { width: dims.w, height: dims.h };
+      } else if (f.type.startsWith("video/")) {
+        const v = document.createElement("video"); 
+        v.preload = "metadata"; 
+        v.src = URL.createObjectURL(f);
+        await new Promise<void>((resolve, reject) => { 
+          v.onloadedmetadata = () => resolve(); 
+          v.onerror = () => reject(); 
+        });
+        enrich = { 
+          width: v.videoWidth || null, 
+          height: v.videoHeight || null, 
+          duration_seconds: isFinite(v.duration) ? Number(v.duration) : null 
+        };
+      }
+
+      const upd = await supabase.from("documents").update({ ...base, ...enrich }).eq("id", meta.id).select().single();
+      if (upd.error) throw upd.error;
+      
+      setMeta({
+        ...upd.data,
+        title: upd.data.file_name,
+        mime_type: upd.data.file_type,
+        size_bytes: upd.data.file_size,
+        owner_id: upd.data.user_id
+      }); // refresh UI
+
+      // 4) Create a new version snapshot and log activity
+      await createVersion({
+        document_id: meta.id,
+        title: f.name,
+        storage_path: newPath,
+        size_bytes: f.size,
+        mime_type: f.type
+      });
+      await logActivity(meta.id, "restore", { replace: true });
+
+      // 5) Refresh signed URL for preview
+      const { data: signed } = await supabase.storage.from("docs").createSignedUrl(newPath, 600);
+      setUrl(signed?.signedUrl ?? null);
+    } finally {
+      (e.target as HTMLInputElement).value = "";
+    }
+  }
+
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase.from("documents").select("*").eq("id", id).single();
@@ -28,7 +102,8 @@ export default function DocumentViewer() {
         ...data,
         title: data.file_name,
         mime_type: data.file_type,
-        size_bytes: data.file_size
+        size_bytes: data.file_size,
+        owner_id: data.user_id
       });
       if (data.storage_path) {
         const { data: signed } = await supabase.storage.from("docs").createSignedUrl(data.storage_path, 600);
@@ -95,6 +170,10 @@ export default function DocumentViewer() {
         {url && <a href={url} target="_blank" className="px-3 py-1 rounded hover:bg-white/10">Open</a>}
         {url && <a href={url} download className="px-3 py-1 rounded hover:bg-white/10">Download</a>}
         {(kind === "image" || kind === "pdf") && <button onClick={handlePrint} className="px-3 py-1 rounded hover:bg-white/10">Print</button>}
+        <label className="border px-3 py-2 rounded cursor-pointer">
+          Replace
+          <input id="replace-input" type="file" className="hidden" onChange={onReplace} />
+        </label>
       </div>
 
       {/* Dark canvas with subtle vignette like pro viewers */}

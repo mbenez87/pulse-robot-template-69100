@@ -68,12 +68,12 @@ export const FileItem = ({
   index
 }: FileItemProps) => {
   const [isRenaming, setIsRenaming] = useState(false);
-  const [newName, setNewName] = useState(document.file_name);
+  const [newName, setNewName] = useState(document.title);
   const inputRef = useRef<HTMLInputElement>(null);
 
 
   const handleRename = () => {
-    if (newName.trim() && newName !== document.file_name) {
+    if (newName.trim() && newName !== document.title) {
       onRename(document.id, newName.trim());
     }
     setIsRenaming(false);
@@ -83,7 +83,7 @@ export const FileItem = ({
     if (e.key === 'Enter') {
       handleRename();
     } else if (e.key === 'Escape') {
-      setNewName(document.file_name);
+      setNewName(document.title);
       setIsRenaming(false);
     }
   };
@@ -144,13 +144,13 @@ export const FileItem = ({
               />
             ) : (
               <span className="text-sm font-medium text-gray-900 truncate">
-                {document.file_name}
+                {document.title}
               </span>
             )}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-          {document.is_folder ? 'Folder' : formatFileSize(document.file_size)}
+          {document.is_folder ? 'Folder' : formatFileSize(document.size_bytes)}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
           {new Date(document.updated_at).toLocaleDateString()}
@@ -256,11 +256,11 @@ export const FileItem = ({
           />
         ) : (
           <div className="text-center">
-            <h3 className="font-medium text-sm text-gray-900 truncate max-w-[120px]" title={document.file_name}>
-              {document.file_name}
+            <h3 className="font-medium text-sm text-gray-900 truncate max-w-[120px]" title={document.title}>
+              {document.title}
             </h3>
             <p className="text-xs text-gray-500 mt-1">
-              {document.is_folder ? 'Folder' : formatFileSize(document.file_size)}
+              {document.is_folder ? 'Folder' : formatFileSize(document.size_bytes)}
             </p>
           </div>
         )}

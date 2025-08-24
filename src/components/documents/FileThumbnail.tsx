@@ -58,16 +58,16 @@ export const FileThumbnail = ({ document, size = "md", className }: FileThumbnai
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const Icon = getFileIcon(document.file_type, document.is_folder);
-  const colorClass = getFileTypeColor(document.file_type, document.is_folder);
+  const Icon = getFileIcon(document.mime_type, document.is_folder);
+  const colorClass = getFileTypeColor(document.mime_type, document.is_folder);
 
   useEffect(() => {
     const loadThumbnail = async () => {
       // Only try to load thumbnails for image and video files
       if (!document.storage_path || document.is_folder) return;
       
-      const isImage = document.file_type.startsWith('image/');
-      const isVideo = document.file_type.startsWith('video/');
+      const isImage = document.mime_type.startsWith('image/');
+      const isVideo = document.mime_type.startsWith('video/');
       
       if (!isImage && !isVideo) return;
 
@@ -98,7 +98,7 @@ export const FileThumbnail = ({ document, size = "md", className }: FileThumbnai
     };
 
     loadThumbnail();
-  }, [document.storage_path, document.file_type, document.is_folder]);
+  }, [document.storage_path, document.mime_type, document.is_folder]);
 
   // Show loading state
   if (loading) {
@@ -114,7 +114,7 @@ export const FileThumbnail = ({ document, size = "md", className }: FileThumbnai
   }
 
   // Show image thumbnail
-  if (thumbnailUrl && document.file_type.startsWith('image/') && !error) {
+  if (thumbnailUrl && document.mime_type.startsWith('image/') && !error) {
     return (
       <div className={cn(
         "relative rounded-lg overflow-hidden bg-gray-100",
@@ -123,7 +123,7 @@ export const FileThumbnail = ({ document, size = "md", className }: FileThumbnai
       )}>
         <img
           src={thumbnailUrl}
-          alt={document.file_name}
+          alt={document.title}
           className="w-full h-full object-cover"
           onError={() => setError(true)}
         />
@@ -132,7 +132,7 @@ export const FileThumbnail = ({ document, size = "md", className }: FileThumbnai
   }
 
   // Show video thumbnail (first frame)
-  if (thumbnailUrl && document.file_type.startsWith('video/') && !error) {
+  if (thumbnailUrl && document.mime_type.startsWith('video/') && !error) {
     return (
       <div className={cn(
         "relative rounded-lg overflow-hidden bg-gray-100",
@@ -144,7 +144,7 @@ export const FileThumbnail = ({ document, size = "md", className }: FileThumbnai
           preload="metadata"
           onError={() => setError(true)}
         >
-          <source src={thumbnailUrl} type={document.file_type} />
+          <source src={thumbnailUrl} type={document.mime_type} />
         </video>
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
           <Video className="h-4 w-4 text-white" />

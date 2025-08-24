@@ -63,7 +63,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
   const [draggedDocument, setDraggedDocument] = useState<Document | null>(null);
   const [dragOverDocument, setDragOverDocument] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const { documents, loading, createFolder, deleteDocument, downloadDocument, moveDocument, fetchDocuments } = useDocuments(currentFolderId, selectedCategory);
+  const { documents, loading, createFolder, deleteDocument, moveDocument, refreshDocuments } = useDocuments(currentFolderId, selectedCategory as 'all' | 'folders' | 'images' | 'videos' | 'pdfs' | 'documents' | 'recent' | 'starred' | 'trash');
   
   console.log('DocumentGrid - Raw documents:', documents);
   console.log('DocumentGrid - Current filter:', { searchQuery, selectedCategory, currentFolderId });
@@ -71,7 +71,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
 
   // Filter documents based on search only (category filtering is now handled in the hook)
   const filteredDocuments = documents.filter((doc) => {
-    const matchesSearch = doc.file_name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase());
     
     // Handle special categories that aren't database categories
     let matchesSpecialCategory = true;
@@ -137,10 +137,14 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
     const selectedDocs = documents.filter(doc => selectedIds.includes(doc.id));
     for (const doc of selectedDocs) {
       if (!doc.is_folder) {
-        await downloadDocument(doc);
+        // TODO: Implement download functionality
+        toast({
+          title: "Feature coming soon",
+          description: "Download functionality will be implemented soon."
+        });
       }
     }
-  }, [selectedIds, documents, downloadDocument]);
+  }, [selectedIds, documents, toast]);
 
   // Drag and drop handlers
   const handleDragStart = useCallback((e: React.DragEvent, doc: Document) => {
@@ -211,11 +215,11 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
           if (error) throw error;
           
           // Refresh the documents list
-          await fetchDocuments();
+          await refreshDocuments();
           
           toast({
             title: "Success",
-            description: `Moved ${validIds.length} item${validIds.length > 1 ? 's' : ''} to "${targetDocument.file_name}"`
+            description: `Moved ${validIds.length} item${validIds.length > 1 ? 's' : ''} to "${targetDocument.title}"`
           });
         }
       }
@@ -229,7 +233,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
     }
     
     setDraggedDocument(null);
-  }, [supabase, fetchDocuments, toast]);
+  }, [refreshDocuments, toast]);
 
   const handleOpenDocument = useCallback((document: Document) => {
     if (document.is_folder) {
@@ -398,7 +402,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
                   onRename={() => {}} // TODO: Implement rename
                   onDuplicate={handleDuplicate}
                   onDelete={(id) => setDeleteConfirmId(id)}
-                  onDownload={downloadDocument}
+                  onDownload={() => {}}
                   onShare={handleShare}
                   onDragStart={handleDragStart}
                   onDragOver={handleDragOver}
@@ -425,7 +429,7 @@ const DocumentGrid = ({ searchQuery, selectedCategory, viewMode, currentFolderId
               onRename={() => {}} // TODO: Implement rename
               onDuplicate={handleDuplicate}
               onDelete={(id) => setDeleteConfirmId(id)}
-              onDownload={downloadDocument}
+              onDownload={() => {}}
               onShare={handleShare}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}

@@ -12,8 +12,8 @@ export interface Document {
   mime_type: string;
   size_bytes: number;
   storage_path: string;
-  category: 'images' | 'videos' | 'pdfs' | 'documents' | 'other';
-  tags: string[];
+  category: string | null;
+  tags: string[] | null;
   summary: string | null;
   width: number | null;
   height: number | null;
@@ -67,14 +67,14 @@ export function useDocuments(folderId: string | null = null, filter: FilterType 
       let query = supabase
         .from('documents')
         .select('*')
-        .eq('owner_id', user.id)
+        .eq('user_id', user.id)
         .eq('is_deleted', false);
 
       // Apply folder filter
       if (folderId) {
-        query = query.eq('folder_id', folderId);
+        query = query.eq('parent_folder_id', folderId);
       } else {
-        query = query.is('folder_id', null);
+        query = query.is('parent_folder_id', null);
       }
 
       // Apply category filter
@@ -95,7 +95,16 @@ export function useDocuments(folderId: string | null = null, filter: FilterType 
 
       if (fetchError) throw fetchError;
 
-      setDocuments(data || []);
+      // Transform the data to match our interface - data already matches our schema
+      const transformedData = (data || []).map(doc => ({
+        ...doc,
+        owner_id: doc.user_id,
+        folder_id: doc.parent_folder_id,
+        mime_type: doc.file_type || '',
+        size_bytes: doc.file_size || 0
+      }));
+
+      setDocuments(transformedData);
 
       // Fetch category counts
       if (user?.id) {
@@ -127,11 +136,11 @@ export function useDocuments(folderId: string | null = null, filter: FilterType 
     if (!user) throw new Error('Not authenticated');
 
     const { error } = await supabase.from('documents').insert({
-      title: name,
-      owner_id: user.id,
-      folder_id: folderId,
-      mime_type: 'folder',
-      size_bytes: 0,
+      file_name: name,
+      user_id: user.id,
+      parent_folder_id: folderId,
+      file_type: 'folder',
+      file_size: 0,
       storage_path: '',
       is_folder: true
     });
@@ -166,7 +175,7 @@ export function useDocuments(folderId: string | null = null, filter: FilterType 
 
     const { error } = await supabase
       .from('documents')
-      .update({ folder_id: targetFolderId })
+      .update({ parent_folder_id: targetFolderId })
       .eq('id', documentId);
 
     if (error) throw error;
@@ -192,7 +201,7 @@ export function useDocuments(folderId: string | null = null, filter: FilterType 
       const { error } = await supabase.from('documents').insert({
         ...original,
         id: undefined,
-        title: `${original.title} (copy)`,
+        file_name: `${original.file_name} (copy)`,
         created_at: undefined,
         updated_at: undefined
       });
@@ -224,11 +233,11 @@ export function useDocuments(folderId: string | null = null, filter: FilterType 
     const { data: document, error: insertError } = await supabase
       .from('documents')
       .insert({
-        title: file.name,
-        owner_id: user.id,
-        folder_id: folderId,
-        mime_type: file.type || 'application/octet-stream',
-        size_bytes: file.size,
+        file_name: file.name,
+        user_id: user.id,
+        parent_folder_id: folderId,
+        file_type: file.type || 'application/octet-stream',
+        file_size: file.size,
         storage_path: path,
         width: metadata.width,
         height: metadata.height,
@@ -301,7 +310,7 @@ export function useDocuments(folderId: string | null = null, filter: FilterType 
           event: '*',
           schema: 'public',
           table: 'documents',
-          filter: `owner_id=eq.${user.id}`
+          filter: `user_id=eq.${user.id}`
         },
         () => {
           fetchDocuments();

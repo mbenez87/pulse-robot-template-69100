@@ -46,7 +46,7 @@ const DocumentActions = ({
 }: DocumentActionsProps) => {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
-  const [newName, setNewName] = useState(document.file_name);
+  const [newName, setNewName] = useState(document.title);
   const { toast } = useToast();
 
   const handleShare = () => {
@@ -77,7 +77,7 @@ const DocumentActions = ({
   };
 
   const confirmDelete = () => {
-    if (window.confirm(`Are you sure you want to delete ${document.file_name}?`)) {
+    if (window.confirm(`Are you sure you want to delete ${document.title}?`)) {
       onDelete(document.id);
     }
   };
@@ -139,7 +139,7 @@ const DocumentActions = ({
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Share {document.file_name}</DialogTitle>
+            <DialogTitle>Share {document.title}</DialogTitle>
             <DialogDescription>
               Create a share link that others can use to access this {document.is_folder ? 'folder' : 'file'}.
             </DialogDescription>
