@@ -1,45 +1,65 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { useToast } from './use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { extractFileMetadata } from '@/lib/metadataExtractor';
+import { toast } from '@/hooks/use-toast';
 
 export interface Document {
   id: string;
-  file_name: string;
-  file_type: string;
-  file_size: number;
+  title: string;
+  owner_id: string;
+  folder_id: string | null;
+  mime_type: string;
+  size_bytes: number;
   storage_path: string;
+  category: 'images' | 'videos' | 'pdfs' | 'documents' | 'other';
+  tags: string[];
+  summary: string | null;
+  width: number | null;
+  height: number | null;
+  duration_seconds: number | null;
+  capture_at: string | null;
+  camera_make: string | null;
+  camera_model: string | null;
+  gps_lat: number | null;
+  gps_lon: number | null;
+  meta: any;
   is_folder: boolean;
-  parent_folder_id: string | null;
+  is_deleted: boolean;
   created_at: string;
   updated_at: string;
-  user_id: string;
-  shared_with?: string[];
-  share_link?: string;
-  ai_summary?: string;
-  // Media metadata fields
-  width?: number;
-  height?: number;
-  duration_seconds?: number;
-  capture_at?: string;
-  camera_make?: string;
-  camera_model?: string;
-  gps_lat?: number;
-  gps_lon?: number;
-  meta?: any;
 }
 
-export const useDocuments = (folderId?: string, category?: string) => {
+export interface CategoryCounts {
+  all: number;
+  folders: number;
+  images: number;
+  videos: number;
+  pdfs: number;
+  documents: number;
+  other: number;
+}
+
+type FilterType = 'all' | 'folders' | 'images' | 'videos' | 'pdfs' | 'documents' | 'recent' | 'starred' | 'trash';
+
+export function useDocuments(folderId: string | null = null, filter: FilterType = 'all') {
+  const { user } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const [categoryCounts, setCategoryCounts] = useState<CategoryCounts>({
+    all: 0,
+    folders: 0,
+    images: 0,
+    videos: 0,
+    pdfs: 0,
+    documents: 0,
+    other: 0
+  });
 
   const fetchDocuments = async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -47,297 +67,268 @@ export const useDocuments = (folderId?: string, category?: string) => {
       let query = supabase
         .from('documents')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('owner_id', user.id)
+        .eq('is_deleted', false);
 
+      // Apply folder filter
       if (folderId) {
-        query = query.eq('parent_folder_id', folderId);
+        query = query.eq('folder_id', folderId);
       } else {
-        query = query.is('parent_folder_id', null);
+        query = query.is('folder_id', null);
       }
 
-      // Add category filtering
-      if (category && category !== 'all') {
-        query = query.eq('category', category);
+      // Apply category filter
+      if (filter === 'folders') {
+        query = query.eq('is_folder', true);
+      } else if (filter !== 'all' && filter !== 'recent' && filter !== 'starred' && filter !== 'trash') {
+        query = query.eq('category', filter).eq('is_folder', false);
+      } else if (filter === 'recent') {
+        query = query.eq('is_folder', false).order('created_at', { ascending: false }).limit(50);
       }
 
-      const { data, error } = await query
-        .order('is_folder', { ascending: false })
-        .order('file_name', { ascending: true });
+      // Default ordering
+      if (filter !== 'recent') {
+        query = query.order('is_folder', { ascending: false }).order('title', { ascending: true });
+      }
 
-      console.log('Documents query result:', { data, error, folderId, category, userId: user.id });
-      
-      if (error) throw error;
+      const { data, error: fetchError } = await query;
+
+      if (fetchError) throw fetchError;
+
       setDocuments(data || []);
-      console.log('Set documents:', data || []);
+
+      // Fetch category counts
+      if (user?.id) {
+        const { data: counts } = await supabase.rpc('counts_by_category', { p_owner: user.id });
+        if (counts) {
+          const countsMap = counts.reduce((acc: any, item: any) => {
+            acc[item.category] = item.count;
+            return acc;
+          }, {});
+          setCategoryCounts({
+            all: countsMap.all || 0,
+            folders: countsMap.folders || 0,
+            images: countsMap.images || 0,
+            videos: countsMap.videos || 0,
+            pdfs: countsMap.pdfs || 0,
+            documents: countsMap.documents || 0,
+            other: countsMap.other || 0
+          });
+        }
+      }
     } catch (err) {
-      console.error('Error fetching documents:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      toast({
-        title: "Error",
-        description: "Failed to load documents",
-        variant: "destructive"
-      });
+      setError(err instanceof Error ? err.message : 'Failed to fetch documents');
     } finally {
       setLoading(false);
     }
   };
 
   const createFolder = async (name: string) => {
-    if (!user) return null;
+    if (!user) throw new Error('Not authenticated');
 
-    try {
-      const { data, error } = await supabase
-        .from('documents')
-        .insert({
-          user_id: user.id,
-          file_name: name,
-          file_type: 'folder',
-          file_size: 0,
-          storage_path: '',
-          is_folder: true,
-          parent_folder_id: folderId || null,
-        })
-        .select()
-        .single();
+    const { error } = await supabase.from('documents').insert({
+      title: name,
+      owner_id: user.id,
+      folder_id: folderId,
+      mime_type: 'folder',
+      size_bytes: 0,
+      storage_path: '',
+      is_folder: true
+    });
 
-      if (error) throw error;
+    if (error) throw error;
 
-      await fetchDocuments();
-      toast({
-        title: "Success",
-        description: "Folder created successfully"
-      });
-
-      return data;
-    } catch (err) {
-      console.error('Error creating folder:', err);
-      toast({
-        title: "Error",
-        description: "Failed to create folder",
-        variant: "destructive"
-      });
-      return null;
-    }
+    // Log activity
+    await logActivity('upload', { name, type: 'folder' });
+    
+    await fetchDocuments();
   };
 
   const deleteDocument = async (documentId: string) => {
-    try {
-      const { error } = await supabase
-        .from('documents')
-        .delete()
-        .eq('id', documentId);
+    if (!user) throw new Error('Not authenticated');
+
+    // Soft delete
+    const { error } = await supabase
+      .from('documents')
+      .update({ is_deleted: true })
+      .eq('id', documentId);
+
+    if (error) throw error;
+
+    // Log activity
+    await logActivity('delete', { documentId });
+
+    await fetchDocuments();
+  };
+
+  const moveDocument = async (documentId: string, targetFolderId: string | null) => {
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+      .from('documents')
+      .update({ folder_id: targetFolderId })
+      .eq('id', documentId);
+
+    if (error) throw error;
+
+    // Log activity
+    await logActivity('move', { documentId, targetFolderId });
+
+    await fetchDocuments();
+  };
+
+  const duplicateDocument = async (documentId: string) => {
+    if (!user) throw new Error('Not authenticated');
+
+    const { data: original, error: fetchError } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('id', documentId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    if (original) {
+      const { error } = await supabase.from('documents').insert({
+        ...original,
+        id: undefined,
+        title: `${original.title} (copy)`,
+        created_at: undefined,
+        updated_at: undefined
+      });
 
       if (error) throw error;
 
+      // Log activity
+      await logActivity('duplicate', { originalId: documentId });
+
       await fetchDocuments();
-      toast({
-        title: "Success",
-        description: "Document deleted successfully"
-      });
-    } catch (err) {
-      console.error('Error deleting document:', err);
-      toast({
-        title: "Error",
-        description: "Failed to delete document",
-        variant: "destructive"
-      });
     }
   };
 
   const uploadDocument = async (file: File) => {
-    if (!user) {
-      console.error('No user found for upload');
-      return null;
+    if (!user) throw new Error('Not authenticated');
+
+    // Extract metadata
+    const metadata = await extractFileMetadata(file);
+
+    // Upload file to storage
+    const path = `${user.id}/${crypto.randomUUID()}-${file.name}`;
+    const { error: uploadError } = await supabase.storage
+      .from('docs')
+      .upload(path, file);
+
+    if (uploadError) throw uploadError;
+
+    // Create document record
+    const { data: document, error: insertError } = await supabase
+      .from('documents')
+      .insert({
+        title: file.name,
+        owner_id: user.id,
+        folder_id: folderId,
+        mime_type: file.type || 'application/octet-stream',
+        size_bytes: file.size,
+        storage_path: path,
+        width: metadata.width,
+        height: metadata.height,
+        duration_seconds: metadata.duration_seconds,
+        capture_at: metadata.capture_at,
+        camera_make: metadata.camera_make,
+        camera_model: metadata.camera_model,
+        gps_lat: metadata.gps_lat,
+        gps_lon: metadata.gps_lon,
+        meta: metadata.meta || {}
+      })
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    // Log activity
+    await logActivity('upload', { 
+      fileName: file.name, 
+      fileSize: file.size,
+      documentId: document.id 
+    });
+
+    // Trigger AI summary generation (async, non-blocking)
+    if (document) {
+      generateSummary(document.id).catch(console.error);
     }
 
-    console.log(`Starting upload for: ${file.name}, size: ${file.size}, type: ${file.type}`);
+    await fetchDocuments();
+    return document;
+  };
 
+  const generateSummary = async (documentId: string) => {
     try {
-      // Generate a clean filename with timestamp and random string
-      const timestamp = Date.now();
-      const randomString = Math.random().toString(36).substring(2, 15);
-      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_'); // Replace special chars
-      const fileName = `${timestamp}_${randomString}_${cleanFileName}`;
-      const filePath = `${user.id}/${fileName}`;
-      
-      console.log('Uploading file with path:', filePath);
-      
-      console.log(`Uploading to storage path: ${filePath}`);
-      
-      const { error: uploadError } = await supabase.storage
-        .from('docs')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        throw uploadError;
-      }
-
-      console.log('File uploaded to storage successfully');
-
-      // Extract metadata for media files
-      console.log('Extracting file metadata...');
-      const metadata = await extractFileMetadata(file);
-      console.log('Extracted metadata:', metadata);
-
-      // Save document metadata with extracted media metadata
-      const documentData = {
-        user_id: user.id,
-        file_name: file.name,
-        file_type: file.type || 'application/octet-stream',
-        file_size: file.size,
-        storage_path: filePath,
-        is_folder: false,
-        parent_folder_id: folderId || null,
-        ...metadata, // Spread the extracted metadata
-      };
-
-      console.log('Saving document metadata:', documentData);
-
-      const { data, error } = await supabase
-        .from('documents')
-        .insert(documentData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Database insert error:', error);
-        throw error;
-      }
-
-      console.log('Document metadata saved successfully:', data);
-
-      // Generate AI summary for the uploaded document
-      try {
-        console.log('Generating AI summary for document:', data.id);
-        await supabase.functions.invoke('generate-document-summary', {
-          body: { documentId: data.id }
-        });
-        console.log('AI summary generation initiated');
-      } catch (summaryError) {
-        console.error('Error generating summary:', summaryError);
-        // Don't fail the upload if summary generation fails
-      }
-
-      // Force refresh the documents list
-      console.log('Upload successful, refreshing documents list');
-      await fetchDocuments();
-      
-      toast({
-        title: "Success",
-        description: `"${file.name}" uploaded successfully`,
-        duration: 3000
+      await supabase.functions.invoke('generate-document-summary', {
+        body: { documentId }
       });
-
-      console.log('Upload process completed successfully');
-      return data;
-    } catch (err) {
-      console.error('Error uploading document:', err);
-      toast({
-        title: "Error",
-        description: `Failed to upload file: ${err.message || 'Unknown error'}`,
-        variant: "destructive"
-      });
-      return null;
+      
+      // Log activity
+      await logActivity('summary_refresh', { documentId });
+    } catch (error) {
+      console.error('Failed to generate summary:', error);
     }
   };
 
-  const downloadDocument = async (document: Document) => {
+  const logActivity = async (action: string, details: any) => {
+    if (!user) return;
+
     try {
-      const { data, error } = await supabase.storage
-        .from('docs')
-        .download(document.storage_path);
-
-      if (error) throw error;
-
-      // Create download link
-      const url = URL.createObjectURL(data);
-      const a = window.document.createElement('a');
-      a.href = url;
-      a.download = document.file_name;
-      window.document.body.appendChild(a);
-      a.click();
-      URL.revokeObjectURL(url);
-      window.document.body.removeChild(a);
-
-      toast({
-        title: "Success",
-        description: "File downloaded successfully"
+      await supabase.from('document_activity').insert({
+        document_id: details.documentId || null,
+        actor_id: user.id,
+        action,
+        details
       });
-    } catch (err) {
-      console.error('Error downloading document:', err);
-      toast({
-        title: "Error",
-        description: "Failed to download file",
-        variant: "destructive"
-      });
+    } catch (error) {
+      console.error('Failed to log activity:', error);
     }
   };
 
-  const moveDocument = async (documentId: string, targetFolderId: string | null) => {
-    try {
-      const { error } = await supabase
-        .from('documents')
-        .update({ parent_folder_id: targetFolderId })
-        .eq('id', documentId);
-
-      if (error) throw error;
-
-      await fetchDocuments();
-      toast({
-        title: "Success",
-        description: "Document moved successfully"
-      });
-    } catch (err) {
-      console.error('Error moving document:', err);
-      toast({
-        title: "Error",
-        description: "Failed to move document",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Effect to fetch documents and set up real-time updates
+  // Set up real-time subscription
   useEffect(() => {
-    if (user) {
-      fetchDocuments();
-      
-      // Set up real-time subscription for document changes
-      const channel = supabase
-        .channel('documents-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-            schema: 'public',
-            table: 'documents',
-            filter: `user_id=eq.${user.id}` // Only listen to current user's documents
-          },
-          (payload) => {
-            console.log('Real-time document change:', payload);
-            // Refresh documents when any change occurs
-            fetchDocuments();
-          }
-        )
-        .subscribe();
+    if (!user) return;
 
-      return () => {
-        console.log('Cleaning up real-time subscription');
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user, folderId, category]);
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'documents',
+          filter: `owner_id=eq.${user.id}`
+        },
+        () => {
+          fetchDocuments();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, folderId, filter]);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [user, folderId, filter]);
 
   return {
     documents,
     loading,
     error,
-    fetchDocuments,
+    categoryCounts,
     createFolder,
     deleteDocument,
-    uploadDocument,
-    downloadDocument,
     moveDocument,
+    duplicateDocument,
+    uploadDocument,
+    generateSummary,
+    refreshDocuments: fetchDocuments
   };
-};
+}

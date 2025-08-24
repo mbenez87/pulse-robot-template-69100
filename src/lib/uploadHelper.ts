@@ -20,11 +20,11 @@ export async function handleUpload(
 
     // Use correct column names that match the database schema
     const { error: insertErr } = await supabase.from("documents").insert({
-      file_name: file.name,          // not 'title'
-      user_id: userId,               // not 'owner_id'
-      parent_folder_id: folder,      // not 'folder_id'
-      file_type: file.type || 'application/octet-stream',  // not 'mime_type'
-      file_size: file.size,          // not 'size_bytes'
+      title: file.name,
+      owner_id: userId,
+      folder_id: folder,
+      mime_type: file.type || 'application/octet-stream',
+      size_bytes: file.size,
       storage_path: path,
       is_folder: false,
       // category is computed by trigger
