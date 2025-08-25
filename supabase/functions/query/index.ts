@@ -39,16 +39,15 @@ serve(async (req) => {
     // Generate embedding for the question
     const questionEmbedding = await generateEmbedding(question);
     
-    // Perform hybrid search for relevant chunks
+    // Perform search using user documents with proper owner_id filtering
     const { data: searchResults, error: searchError } = await supabaseClient
-      .rpc('hybrid_search_chunks', {
-        query_text: question,
+      .rpc('search_document_chunks', {
         query_embedding: questionEmbedding,
-        org_filter: org_id || '',
-        room_filter: room_id || null,
-        doc_filter: doc_ids || null,
-        match_threshold: 0.7,
-        match_count: 10
+        match_threshold: 0.5,
+        match_count: 10,
+        filter_org_id: org_id || '',
+        filter_room_ids: room_id ? [room_id] : [],
+        filter_owner_id: org_id // Use org_id as owner_id to filter by user
       });
 
     if (searchError) {
@@ -63,7 +62,7 @@ serve(async (req) => {
     if (searchResults && searchResults.length > 0) {
       // Build context from search results
       contextPassages = searchResults.map((result, index) => 
-        `[${index + 1}] ${result.text_content} (Source: ${result.doc_title || 'Unknown'}, Page: ${result.page_number || 'N/A'})`
+        `[${index + 1}] ${result.text_content} (Source: ${result.documents?.title || result.documents?.file_name || 'Unknown'}, Chunk: ${result.chunk_index || 'N/A'})`
       ).join('\n\n');
 
       systemPrompt = `Answer the user's question strictly based on the provided document passages. Cite each claim with the source number [1], [2], etc. If the information is insufficient, state that clearly.
@@ -75,10 +74,10 @@ ${contextPassages}`;
       citations = searchResults.map((result, index) => ({
         id: index + 1,
         doc_id: result.document_id,
-        title: result.doc_title || 'Unknown Document',
-        page: result.page_number || null,
+        title: result.documents?.title || result.documents?.file_name || 'Unknown Document',
+        page: result.chunk_index || null,
         snippet: result.text_content.substring(0, 200) + '...',
-        similarity: result.similarity
+        similarity: Math.round(result.similarity * 100) / 100
       }));
     }
 

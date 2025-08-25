@@ -45,11 +45,15 @@ export default function CreateDoc() {
 
       // Insert document record
       const { error: dbError } = await supabase.from("documents").insert({
+        title: `${fileName}.txt`,
         file_name: `${fileName}.txt`,
         file_type: 'text/plain',
+        mime_type: 'text/plain',
         file_size: blob.size,
+        size_bytes: blob.size,
         storage_path: filePath,
         user_id: user.id,
+        owner_id: user.id,
         upload_status: 'completed',
         processing_status: 'completed'
       });

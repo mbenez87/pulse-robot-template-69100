@@ -6,9 +6,6 @@ import DocumentGrid from '@/components/documents/DocumentGrid';
 import DocumentSidebar from '@/components/documents/DocumentSidebar';
 import DocumentHeader from '@/components/documents/DocumentHeader';
 import UploadModal from '@/components/documents/UploadModal';
-import FolderNavigation from '@/components/documents/FolderNavigation';
-import EmptyState from '@/components/documents/EmptyState';
-import BulkActions from '@/components/documents/BulkActions';
 import { Button } from '@/components/ui/button';
 import { Upload, FolderPlus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -23,7 +20,6 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
 
   const {
     documents,
@@ -61,22 +57,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleBulkMove = async (targetFolderId: string | null) => {
-    try {
-      await Promise.all(
-        multiSelection.selectedIds.map(id => moveDocument(id, targetFolderId))
-      );
-      multiSelection.clearSelection();
-      toast({ title: `Moved ${multiSelection.selectedIds.length} items` });
-    } catch (error) {
-      toast({ 
-        title: "Failed to move items", 
-        description: error instanceof Error ? error.message : "Unknown error",
-        variant: "destructive" 
-      });
-    }
-  };
-
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${multiSelection.selectedIds.length} items?`)) return;
     
@@ -110,42 +90,24 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="flex h-screen pt-16">
         {/* Sidebar */}
-        <DocumentSidebar
-          filter={filter}
-          onFilterChange={setFilter}
-          categoryCounts={categoryCounts}
-          currentFolder={currentFolder}
-          onFolderChange={setCurrentFolder}
-        />
+        <div className="w-64 border-r border-border bg-muted/30">
+          <div className="p-4">
+            <h2 className="text-lg font-semibold mb-4">Documents</h2>
+          </div>
+        </div>
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <DocumentHeader
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          />
-
-          {/* Folder Navigation */}
-          {currentFolder && (
-            <FolderNavigation
-              currentFolder={currentFolder}
-              onNavigate={setCurrentFolder}
+          <div className="border-b border-border p-4">
+            <input
+              type="text"
+              placeholder="Search documents..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
-          )}
-
-          {/* Bulk Actions */}
-          {multiSelection.selectedCount > 0 && (
-            <BulkActions
-              selectedCount={multiSelection.selectedCount}
-              onMove={handleBulkMove}
-              onDelete={handleBulkDelete}
-              onClear={multiSelection.clearSelection}
-              documents={documents}
-            />
-          )}
+          </div>
 
           {/* Action Bar */}
           <div className="flex items-center gap-2 px-6 py-3 border-b border-border">
@@ -171,23 +133,21 @@ export default function Dashboard() {
                 <Button onClick={refreshDocuments} className="mt-4">Retry</Button>
               </div>
             ) : filteredDocuments.length === 0 ? (
-              <EmptyState 
-                filter={filter}
-                searchQuery={searchQuery}
-                onUpload={() => setShowUploadModal(true)}
-                onCreateFolder={handleCreateFolder}
-              />
+              <div className="text-center py-12">
+                <h3 className="text-lg font-medium mb-2">No documents yet</h3>
+                <p className="text-muted-foreground mb-4">Upload your first document to get started</p>
+                <Button onClick={() => setShowUploadModal(true)}>Upload Files</Button>
+              </div>
             ) : (
-              <DocumentGrid
-                documents={filteredDocuments}
-                viewMode={viewMode}
-                multiSelection={multiSelection}
-                onMove={moveDocument}
-                onDelete={deleteDocument}
-                onDuplicate={duplicateDocument}
-                dragOverFolder={dragOverFolder}
-                onDragOverFolder={setDragOverFolder}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredDocuments.map((doc) => (
+                  <div key={doc.id} className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <h4 className="font-medium truncate">{doc.title}</h4>
+                    <p className="text-sm text-muted-foreground">{doc.mime_type}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</p>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -197,8 +157,6 @@ export default function Dashboard() {
       <UploadModal
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
-        currentFolder={currentFolder}
-        onUploadComplete={refreshDocuments}
       />
     </div>
   );

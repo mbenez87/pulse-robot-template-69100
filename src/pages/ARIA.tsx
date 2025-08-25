@@ -327,7 +327,7 @@ export default function ARIA() {
         question: queryText,
         model: selectedModel,
         mode: selectedMode,
-        org_id: contextFilter.org_id || user?.id || '',
+        org_id: user?.id || '', // Use user ID as org_id to access user's documents
         room_id: contextFilter.room_id || null,
         doc_ids: contextFilter.doc_ids || null,
         verifier: verifierEnabled

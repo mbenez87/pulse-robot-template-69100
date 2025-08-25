@@ -136,11 +136,16 @@ export function useDocuments(folderId: string | null = null, filter: FilterType 
     if (!user) throw new Error('Not authenticated');
 
     const { error } = await supabase.from('documents').insert({
+      title: name,
       file_name: name,
       user_id: user.id,
+      owner_id: user.id,
+      folder_id: folderId,
       parent_folder_id: folderId,
       file_type: 'folder',
+      mime_type: 'folder',
       file_size: 0,
+      size_bytes: 0,
       storage_path: '',
       is_folder: true
     });
@@ -233,11 +238,16 @@ export function useDocuments(folderId: string | null = null, filter: FilterType 
     const { data: document, error: insertError } = await supabase
       .from('documents')
       .insert({
+        title: file.name,
         file_name: file.name,
         user_id: user.id,
+        owner_id: user.id,
+        folder_id: folderId,
         parent_folder_id: folderId,
         file_type: file.type || 'application/octet-stream',
+        mime_type: file.type || 'application/octet-stream',
         file_size: file.size,
+        size_bytes: file.size,
         storage_path: path,
         width: metadata.width,
         height: metadata.height,
