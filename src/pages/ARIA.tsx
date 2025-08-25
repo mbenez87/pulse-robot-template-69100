@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import openaiLogo from "@/assets/openai-logo.svg";
 import geminiLogo from "@/assets/gemini-logo.svg";
 import claudeLogo from "@/assets/claude-logo.png";
 import perplexityLogo from "@/assets/perplexity-logo.png";
+import { ProcessDocumentsButton } from "@/components/ProcessDocumentsButton";
 
 interface Citation {
   id: number;
@@ -573,6 +574,14 @@ export default function ARIA() {
                       )}
                     </Button>
                   </div>
+                </div>
+
+                {/* Enable Search Button */}
+                <div className="flex items-center gap-4 mb-3">
+                  <ProcessDocumentsButton />
+                  <span className="text-sm text-muted-foreground">
+                    Click to enable search across your uploaded documents
+                  </span>
                 </div>
 
                 {/* Controls - Row A: Mode Chips Only */}
